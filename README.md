@@ -16,6 +16,12 @@ NullDB is a powerful database solution designed to handle basic text documents w
 
 ## Technology
 * C++
+    * Standard Template Library (STL)
+    * Algorithm
+    * fstream
+    * iostream
+    * string
+    * vector
 * Interface: website
 
 ## Features
@@ -51,3 +57,7 @@ Records are stored in a text file for easy data persistence.
 Future enhancements include adding encryption for enhanced data security and adding a web frontend for easier user access.
 
 ## BurnDown Chart
+
+
+## Contributors
+All group members contributed equally during the development. We worked on a remote online compiler, which is why the contributor list is off. We have comments to parts where we were in charge. Further code modifications will be done with Github branches and officially tracked.
