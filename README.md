@@ -14,3 +14,6 @@ NullDB is a powerful database solution designed to handle basic text documents w
 * Developers can insert/delete/update data
 * Developers have the option to search for term frequency
 * Developers can display records in a table format
+## Technology
+* C++
+* Interface: website
