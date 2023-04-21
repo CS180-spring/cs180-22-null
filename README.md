@@ -7,7 +7,10 @@
 * Chun Ho Wong
 * Irene Wu
 # Interface Documentation
+## Overview
+NullDB is a powerful database solution designed to handle basic text documents with ease. Our innovative platform provides a simple and intuitive way to store and manage text-based data, offering unparalleled performance and reliability.
 ## Features
+* Developers have encrypted access to database (log-in), a manager has more options within the interface
 * Developers can insert/delete/update data
 * Developers have the option to search for term frequency
 * Developers can display records in a table format
