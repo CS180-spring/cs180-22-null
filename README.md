@@ -21,6 +21,7 @@ NullDB is a powerful database solution designed to handle basic text documents w
 ## Features
 A text-based database program built with C++. Features include:
 
+- Managing multiple databases
 - Basic insert, delete, and update functionality.
 - Automatic ID generation and timestamping of records.
 - User authentication with username and password, and user-specific record access.
