@@ -49,3 +49,5 @@ Records are stored in a text file for easy data persistence.
 ## Future Enhancements
 
 Future enhancements include adding encryption for enhanced data security and adding a web frontend for easier user access.
+
+## BurnDown Chart
