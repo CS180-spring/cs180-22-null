@@ -57,7 +57,7 @@ Records are stored in a text file for easy data persistence.
 Future enhancements include adding encryption for enhanced data security and adding a web frontend for easier user access.
 
 ## BurnDown Chart
-
+https://docs.google.com/spreadsheets/d/1hRzuSrZP6Vtv3Y083Tg9bsVdBTbVcGTs/edit#gid=2086879608
 
 ## Contributors
 All group members contributed equally during the development. We worked on a remote online compiler, which is why the contributor list is off. We have comments to parts where we were in charge. Further code modifications will be done with Github branches and officially tracked.
