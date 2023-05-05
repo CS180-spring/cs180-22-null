@@ -18,9 +18,10 @@ int insert(const std::string &data, const std::string &createdBy,
   Record newRecord;
   newRecord.id = getNextId(records);
   newRecord.data = data;
-  newRecord.createdBy = createdBy;
+  newRecord.creator = createdBy;
   newRecord.timestamp = currentDateTime();
-  newRecord.last_modified = currentDateTime(); // Add this line
+  newRecord.last_modified = currentDateTime();
+  newRecord.last_read = "";
   records.push_back(newRecord);
   return newRecord.id;
 }
@@ -85,7 +86,7 @@ vector<Record> filterByCreator(const vector<Record> &records,
                                const string &createdBy) {
   vector<Record> filteredRecords;
   for (const auto &record : records) {
-    if (record.createdBy == createdBy) {
+    if (record.creator == createdBy) {
       filteredRecords.push_back(record);
     }
   }

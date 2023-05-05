@@ -1,6 +1,6 @@
+#include "presentation_layer.h"
 #include "business_layer_records.h"
 #include "data_access_layer.h"
-#include "presentation_layer.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -68,6 +68,7 @@ int main() {
 
   if (!isManager("123", users)) {
     createUser("123", "123", true, users);
+    createUser("1233", "1233", false, users);
     saveUsers(users);
   }
 
@@ -226,11 +227,17 @@ int main() {
       case 4: {
         for (const auto &record :
              filterByCreator(records, currentUser->username)) {
-          updateLastRead(record.id, records); // Add this line
+          updateLastRead(record.id, records);
           cout << record.id << ": " << record.data
                << " (Created at: " << record.timestamp
                << ", Last modified: " << record.last_modified
-               << ", Last read: " << record.last_read << ")" << endl;
+               << ", Last read: ";
+          if (record.last_read.empty()) {
+            cout << "Never been read";
+          } else {
+            cout << record.last_read;
+          }
+          cout << ")" << endl;
         }
         break;
       }

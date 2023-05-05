@@ -1,5 +1,7 @@
 #include "data_access_layer.h"
 #include "json.hpp"
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <ctime>
 #include <fstream>
@@ -8,6 +10,30 @@
 
 using json = nlohmann::json;
 using namespace std;
+
+const string XOR_KEY = "TEAMNULL";
+
+string encryptPassword(const string &password) {
+  string encrypted_password = password;
+  int key_length = XOR_KEY.length();
+  for (int i = 0; i < encrypted_password.length(); i++) {
+    if (isalnum(encrypted_password[i])) {
+      encrypted_password[i] = encrypted_password[i] ^ XOR_KEY[i % key_length];
+    }
+  }
+  return encrypted_password;
+}
+
+string decryptPassword(const string &encrypted_password) {
+  string password = encrypted_password;
+  int key_length = XOR_KEY.length();
+  for (int i = 0; i < password.length(); i++) {
+    if (isalnum(password[i])) {
+      password[i] = password[i] ^ XOR_KEY[i % key_length];
+    }
+  }
+  return password;
+}
 
 vector<Record> loadRecords() {
   vector<Record> records;
@@ -46,31 +72,44 @@ void saveRecords(const vector<Record> &records) {
   }
 
   ofstream ofs("records.json");
-  ofs << setw(4) << j_records << endl;
+  ofs << j_records.dump(4) << endl;
   ofs.close();
 }
 
 vector<User> loadUsers() {
   vector<User> users;
-  ifstream inFile("users.txt");
-  User temp;
 
-  while (inFile >> temp.username >> temp.password >> temp.isManager) {
-    users.push_back(temp);
+  ifstream inFile("users.json");
+  if (inFile.is_open()) {
+    json j_users;
+    inFile >> j_users;
+
+    for (const auto &j_user : j_users) {
+      User user;
+      user.username = j_user["username"];
+      user.password = decryptPassword(j_user["password"]);
+      user.isManager = j_user["isManager"];
+      users.push_back(user);
+    }
+
+    inFile.close();
   }
 
-  inFile.close();
   return users;
 }
 
 void saveUsers(const vector<User> &users) {
-  ofstream outFile("users.txt");
+  json j_users = json::array();
 
-  for (const auto &user : users) {
-    outFile << user.username << " " << user.password << " " << user.isManager
-            << "\n";
+  for (const User &user : users) {
+    json j_user = {{"username", user.username},
+                   {"password", encryptPassword(user.password)},
+                   {"isManager", user.isManager}};
+    j_users.push_back(j_user);
   }
 
+  ofstream outFile("users.json");
+  outFile << j_users.dump(4) << endl;
   outFile.close();
 }
 
