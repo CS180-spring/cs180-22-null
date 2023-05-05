@@ -15,6 +15,8 @@ struct Record {
   std::string data;
   std::string timestamp;
   std::string createdBy;
+  std::string last_modified;
+  std::string last_read;
 };
 
 int getNextId(const std::vector<Record> &records);
