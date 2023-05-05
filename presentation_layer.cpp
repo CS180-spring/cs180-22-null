@@ -1,6 +1,6 @@
-#include "presentation_layer.h"
 #include "business_layer_records.h"
 #include "data_access_layer.h"
+#include "presentation_layer.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -226,8 +226,11 @@ int main() {
       case 4: {
         for (const auto &record :
              filterByCreator(records, currentUser->username)) {
+          updateLastRead(record.id, records); // Add this line
           cout << record.id << ": " << record.data
-               << " (Created at: " << record.timestamp << ")" << endl;
+               << " (Created at: " << record.timestamp
+               << ", Last modified: " << record.last_modified
+               << ", Last read: " << record.last_read << ")" << endl;
         }
         break;
       }
