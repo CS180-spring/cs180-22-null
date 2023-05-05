@@ -1,36 +1,53 @@
+#include "data_access_layer.h"
+#include "json.hpp"
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#include "data_access_layer.h"
-
+using json = nlohmann::json;
 using namespace std;
 
 vector<Record> loadRecords() {
   vector<Record> records;
-  ifstream inFile("database.txt");
-  Record temp;
 
-  while (inFile >> temp.id && getline(inFile, temp.data) &&
-         getline(inFile, temp.timestamp) && getline(inFile, temp.createdBy)) {
-    records.push_back(temp);
+  ifstream ifs("records.json");
+  if (ifs.is_open()) {
+    json j_records;
+    ifs >> j_records;
+
+    for (const auto &j_record : j_records) {
+      Record record;
+      record.id = j_record["id"];
+      record.data = j_record["data"];
+      record.creator = j_record["creator"];
+      record.timestamp = j_record["timestamp"];
+      record.last_modified = j_record["last_modified"];
+      record.last_read = j_record["last_read"];
+      records.push_back(record);
+    }
+
+    ifs.close();
   }
 
-  inFile.close();
   return records;
 }
 
 void saveRecords(const vector<Record> &records) {
-  ofstream outFile("database.txt");
+  json j_records = json::array();
 
-  for (const auto &record : records) {
-    outFile << record.id << " " << record.data << "\n"
-            << record.timestamp << "\n"
-            << record.createdBy << "\n";
+  for (const Record &record : records) {
+    json j_record = {{"id", record.id},
+                     {"data", record.data},
+                     {"creator", record.creator},
+                     {"timestamp", record.timestamp}};
+    j_records.push_back(j_record);
   }
 
-  outFile.close();
+  ofstream ofs("records.json");
+  ofs << setw(4) << j_records << endl;
+  ofs.close();
 }
 
 vector<User> loadUsers() {
