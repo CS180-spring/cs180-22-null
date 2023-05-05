@@ -13,12 +13,16 @@ using namespace std;
   Parameters: data to insert, the user info, and the database to insert in
   Return: the id of the record
 */
-int insert(const string &data, const string &createdBy,
-           vector<Record> &records) {
-  int id = getNextId(records);
-  string timestamp = currentDateTime();
-  records.push_back({id, data, timestamp, createdBy});
-  return id;
+int insert(const std::string &data, const std::string &createdBy,
+           std::vector<Record> &records) {
+  Record newRecord;
+  newRecord.id = getNextId(records);
+  newRecord.data = data;
+  newRecord.createdBy = createdBy;
+  newRecord.timestamp = currentDateTime();
+  newRecord.last_modified = currentDateTime(); // Add this line
+  records.push_back(newRecord);
+  return newRecord.id;
 }
 
 /*
@@ -27,10 +31,13 @@ int insert(const string &data, const string &createdBy,
   Parameters: the id of the record to delete, the table that the record is
    located in
 */
-void deleteRecord(int id, vector<Record> &records) {
-  records.erase(remove_if(records.begin(), records.end(),
-                          [id](const Record &r) { return r.id == id; }),
-                records.end());
+void deleteRecord(int id, std::vector<Record> &records) {
+  auto it = find_if(records.begin(), records.end(),
+                    [id](const Record &record) { return record.id == id; });
+  if (it != records.end()) {
+    it->last_modified = currentDateTime(); // Add this line
+    records.erase(it);
+  }
 }
 
 /*
@@ -39,12 +46,12 @@ void deleteRecord(int id, vector<Record> &records) {
   Parameters: id of record to update, the data to update, and the database of
    the record
 */
-void update(int id, const string &newData, vector<Record> &records) {
-  for (auto &record : records) {
-    if (record.id == id) {
-      record.data = newData;
-      break;
-    }
+void update(int id, const std::string &newData, std::vector<Record> &records) {
+  auto it = find_if(records.begin(), records.end(),
+                    [id](const Record &record) { return record.id == id; });
+  if (it != records.end()) {
+    it->data = newData;
+    it->last_modified = currentDateTime(); // Add this line
   }
 }
 
@@ -155,6 +162,19 @@ bool isManager(const string &username, const vector<User> &users) {
   return false;
 }
 
+/*
+
+Newly Added
+
+*/
+
+void updateLastRead(int id, std::vector<Record> &records) {
+  auto it = find_if(records.begin(), records.end(),
+                    [id](const Record &record) { return record.id == id; });
+  if (it != records.end()) {
+    it->last_read = currentDateTime();
+  }
+}
 /*
   Function: logout
   Desc: logs out the current user in the system
