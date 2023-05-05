@@ -35,6 +35,7 @@ User *login(const std::string &username, const std::string &password,
 User *createUser(const std::string &username, const std::string &password,
                  bool isManager, std::vector<User> &users);
 bool isManager(const std::string &username, const std::vector<User> &users);
+void updateLastRead(int id, std::vector<Record> &records);
 void logout(User *&currentUser);
 
 #endif // BUSINESS_LOGIC_LAYER_H
