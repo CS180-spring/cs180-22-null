@@ -131,20 +131,19 @@ string base64_decode(const string &in) {
   return out;
 }
 
-//'N', 'U', 'L', and 'L' are 78, 85, 76, and 76
-// 78 + 85 + 76 + 76 = 315
+// Lucky Number 8
 
 string encryptString(const string &str) {
   string encrypted = base64_encode(str);
   for_each(encrypted.begin(), encrypted.end(),
-           [](char &c) { c = c + 315; }); // Caesar Cipher
+           [](char &c) { c = c + 8; }); // Caesar Cipher
   return encrypted;
 }
 
 string decryptString(const string &str) {
   string decrypted = str;
   for_each(decrypted.begin(), decrypted.end(),
-           [](char &c) { c = c - 315; }); // Caesar Cipher
+           [](char &c) { c = c - 8; }); // Caesar Cipher
   return base64_decode(decrypted);
 }
 
