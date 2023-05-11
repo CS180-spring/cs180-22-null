@@ -129,161 +129,218 @@ int main() {
     } else {
       cout << "Invalid choice! Please try again." << endl;
     }
-  }
-
-  while (!debug) {
-    int choice;
-    cout << "╔══════════════════════════════════════════════╗" << endl;
-    cout << "║                                              ║" << endl;
-    cout << "║                  Table  Menu                 ║" << endl;
-    cout << "║                                              ║" << endl;
-    cout << "╠══════════════════════════════════════════════╣" << endl;
-    cout << "║ 1. Create a table                            ║" << endl;
-    cout << "║ 2. View all tables                           ║" << endl;
-    cout << "║ 3. Go into a table                           ║" << endl;
-    cout << "║ 4. Delete a table                            ║" << endl;
-    cout << "║ 5. Exit                                      ║" << endl;
-    cout << "║ 6. Debug                                     ║" << endl;
-    cout << "║                                              ║" << endl;
-    cout << "║ Choose an option:                            ║" << endl;
-    cout << "╚══════════════════════════════════════════════╝" << endl;
-    cin >> choice;
-
-    switch (choice) {
-    case 1:
-      cout << "Option 1: Create a table." << endl;
-      break;
-    case 2:
-      cout << "Option 2: View all tables." << endl;
-      break;
-    case 3:
-      cout << "Option 3: Go into a table." << endl;
-      break;
-    case 4:
-      cout << "Option 4: Delete a table." << endl;
-      break;
-    case 5:
-      cout << "Exiting NullDB. Goodbye!" << endl;
-      return 0;
-    case 6:
-      debug = currentUser;
-      break;
-    default:
-      cout << "Invalid choice! Please try again." << endl;
-    }
-
-    while (true) {
+    while (currentUser) {
       int choice;
       cout << "╔══════════════════════════════════════════════╗" << endl;
       cout << "║                                              ║" << endl;
-      cout << "║        Welcome to the NullDB!                ║" << endl;
+      cout << "║                  Table  Menu                 ║" << endl;
       cout << "║                                              ║" << endl;
       cout << "╠══════════════════════════════════════════════╣" << endl;
-      cout << "║ Welcome, " << currentUser->username
-           << setw(39 - currentUser->username.length()) << "║" << endl;
-      cout << "╠══════════════════════════════════════════════╣" << endl;
-      cout << "║ 1. Insert                                    ║" << endl;
-      cout << "║ 2. Delete                                    ║" << endl;
-      cout << "║ 3. Update                                    ║" << endl;
-      cout << "║ 4. Display Records                           ║" << endl;
-      cout << "║ 5. Keyword Search                            ║" << endl;
-      cout << "║ 6. Term Frequency                            ║" << endl;
-      cout << "║ 7. Save and Exit                             ║" << endl;
-      cout << "║ 8. Log out                                   ║" << endl;
+      cout << "║ 1. Create a table                            ║" << endl;
+      cout << "║ 2. View all tables                           ║" << endl;
+      cout << "║ 3. Go into a table                           ║" << endl;
+      cout << "║ 4. Delete a table                            ║" << endl;
+      cout << "║ 5. Exit                                      ║" << endl;
+      cout << "║ 6. Debug                                     ║" << endl;
       cout << "║                                              ║" << endl;
-      cout << "║ Enter your choice:                           ║" << endl;
+      cout << "║ Choose an option:                            ║" << endl;
       cout << "╚══════════════════════════════════════════════╝" << endl;
-
       cin >> choice;
 
       switch (choice) {
-      case 1: {
-        string data;
-        cin.ignore();
-        cout << "Enter data: ";
-        getline(cin, data);
-        int id = insert(data, currentUser->username, records);
-        cout << "Inserted record with id: " << id << endl;
+      case 1:
+        cout << "Option 1: Create a table." << endl;
         break;
-      }
-      case 2: {
-        int id;
-        cout << "Enter id to delete: ";
-        cin >> id;
-        deleteRecord(id, records);
+      case 2:
+        cout << "Option 2: View all tables." << endl;
         break;
-      }
-      case 3: {
-        int id;
-        string newData;
-        cout << "Enter id to update: ";
-        cin >> id;
-        cin.ignore();
-        cout << "Enter new data: ";
-        getline(cin, newData);
-        update(id, newData, records);
+      case 3:
+        cout << "Option 3: Go into a table." << endl;
         break;
-      }
-      case 4: {
-        for (const auto &record :
-             filterByCreator(records, currentUser->username)) {
-          updateLastRead(record.id, records);
-          cout << record.id << ": " << record.data
-               << " (Created at: " << record.timestamp
-               << ", Last modified: " << record.last_modified
-               << ", Last read: ";
-          if (record.last_read.empty()) {
-            cout << "Never been read";
-          } else {
-            cout << record.last_read;
-          }
-          cout << ")" << endl;
-        }
+      case 4:
+        cout << "Option 4: Delete a table." << endl;
         break;
-      }
-      case 5: {
-        string keyword;
-        cout << "Enter keyword: ";
-        cin >> keyword;
-        for (const auto &record : filterByKeyword(
-                 filterByCreator(records, currentUser->username), keyword)) {
-          cout << record.id << ": " << record.data
-               << " (Created at: " << record.timestamp << ")" << endl;
-        }
-        break;
-      }
-      case 6: {
-        string term;
-        cout << "Enter term: ";
-        cin >> term;
-        int totalFrequency = 0;
-        for (const auto &record :
-             filterByCreator(records, currentUser->username)) {
-          int frequency = countTermFrequency(record.data, term);
-          totalFrequency += frequency;
-          if (frequency > 0) {
-            cout << "Record ID " << record.id << ": " << frequency
-                 << " occurrences" << endl;
-          }
-        }
-        cout << "Total occurrences of term \"" << term
-             << "\": " << totalFrequency << endl;
-        break;
-      }
-      case 7: {
-        saveRecords(records);
-        break;
-      }
-      case 8: {
-        logout(currentUser);
-        break;
-      }
-      default: {
-        cout << "Invalid choice!" << endl;
-        break;
-      }
+      case 5:
+        cout << "Exiting NullDB. Goodbye!" << endl;
         return 0;
+      case 6:
+        debug = currentUser;
+        break;
+      default:
+        cout << "Invalid choice! Please try again." << endl;
+      }
+
+      while (true && currentUser) {
+        int choice;
+        cout << "╔══════════════════════════════════════════════╗" << endl;
+        cout << "║                                              ║" << endl;
+        cout << "║        Welcome to the NullDB!                ║" << endl;
+        cout << "║                                              ║" << endl;
+        cout << "╠══════════════════════════════════════════════╣" << endl;
+        cout << "║ Welcome, " << currentUser->username
+             << setw(39 - currentUser->username.length()) << "║" << endl;
+        cout << "╠══════════════════════════════════════════════╣" << endl;
+        cout << "║ 0. Display by ID                             ║" << endl;
+        cout << "║ 1. Insert                                    ║" << endl;
+        cout << "║ 2. Delete                                    ║" << endl;
+        cout << "║ 3. Update                                    ║" << endl;
+        cout << "║ 4. Display Records                           ║" << endl;
+        cout << "║ 5. Keyword Search                            ║" << endl;
+        cout << "║ 6. Term Frequency                            ║" << endl;
+        cout << "║ 7. Sorting (Sub-Menu)                        ║" << endl;
+        cout << "║ 8. Save and Exit                             ║" << endl;
+        cout << "║ 9. Log out                                   ║" << endl;
+        cout << "║                                              ║" << endl;
+        cout << "║ Enter your choice:                           ║" << endl;
+        cout << "╚══════════════════════════════════════════════╝" << endl;
+
+        cin >> choice;
+
+        switch (choice) {
+        case 0: {
+          int id;
+          cout << "Enter record ID to display: ";
+          cin >> id;
+          auto record = displayRecord(id, records, currentUser);
+          if (!record.empty()) {
+            cout << "Record ID: " << record[0].id
+                 << "\nData: " << record[0].data << endl;
+          } else {
+            cout << "Either the record does not exist or you do not have "
+                    "permission to view it."
+                 << endl;
+          }
+          break;
+        }
+        case 1: {
+          string data;
+          cin.ignore();
+          cout << "Enter data: ";
+          getline(cin, data);
+          int id = insert(data, currentUser->username, records);
+          cout << "Inserted record with id: " << id << endl;
+          break;
+        }
+        case 2: {
+          int id;
+          cout << "Enter id to delete: ";
+          cin >> id;
+          deleteRecord(id, records);
+          break;
+        }
+        case 3: {
+          int id;
+          string newData;
+          cout << "Enter id to update: ";
+          cin >> id;
+          cin.ignore();
+          cout << "Enter new data: ";
+          getline(cin, newData);
+          update(id, newData, records);
+          break;
+        }
+        case 4: {
+          for (const auto &record :
+               filterByCreator(records, currentUser->username)) {
+            updateLastRead(record.id, records);
+            cout << record.id << ": " << record.data
+                 << " (Created at: " << record.timestamp
+                 << ", Last modified: " << record.last_modified
+                 << ", Last read: ";
+            if (record.last_read.empty()) {
+              cout << "Never been read";
+            } else {
+              cout << record.last_read;
+            }
+            cout << ")" << endl;
+          }
+          break;
+        }
+        case 5: {
+          string keyword;
+          cout << "Enter keyword: ";
+          cin >> keyword;
+          for (const auto &record : filterByKeyword(
+                   filterByCreator(records, currentUser->username), keyword)) {
+            cout << record.id << ": " << record.data
+                 << " (Created at: " << record.timestamp << ")" << endl;
+          }
+          break;
+        }
+        case 6: {
+          string term;
+          cout << "Enter term: ";
+          cin >> term;
+          int totalFrequency = 0;
+          for (const auto &record :
+               filterByCreator(records, currentUser->username)) {
+            int frequency = countTermFrequency(record.data, term);
+            totalFrequency += frequency;
+            if (frequency > 0) {
+              cout << "Record ID " << record.id << ": " << frequency
+                   << " occurrences" << endl;
+            }
+          }
+          cout << "Total occurrences of term \"" << term
+               << "\": " << totalFrequency << endl;
+          break;
+        }
+        case 7: {
+          {
+            int sortChoice;
+            cout << "Sort Menu\n1. Sort Records (A-Z, Z-A)\n2. Sort Records by "
+                    "ID (Min to Max, Max to Min)\nEnter your choice: ";
+            cin >> sortChoice;
+
+            switch (sortChoice) {
+            case 1: {
+              int order;
+              cout << "Sort Records\n1. A-Z\n2. Z-A\nEnter your choice: ";
+              cin >> order;
+              sortRecords(records, order == 2);
+              cout << "Records sorted." << endl;
+              break;
+            }
+            case 2: {
+              int order;
+              cout << "Sort Records by ID\n1. Min to Max\n2. Max to Min\nEnter "
+                      "your choice: ";
+              cin >> order;
+              sortRecordsById(records, order == 2);
+              cout << "Records sorted by ID." << endl;
+              break;
+            }
+            default: {
+              cout << "Invalid choice!" << endl;
+              break;
+            }
+            }
+            break;
+          }
+        }
+        case 8: {
+          saveRecords(records);
+          break;
+        }
+        case 9: {
+          if (logout(currentUser)) {
+            break; // break out of the inner while-loop if logout was successful
+          }
+        }
+        default: {
+          cout << "Invalid choice!" << endl;
+          break;
+        }
+        }
+        if (!currentUser) {
+          break; // break out of the inner while-loop if currentUser is nullptr
+        }
+      }
+      if (!currentUser) {
+        break; // break out of the inner while-loop if currentUser is nullptr
       }
     }
   }
+
+  return 0;
 }
