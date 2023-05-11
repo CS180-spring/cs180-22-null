@@ -1,9 +1,9 @@
-#include <algorithm>
-#include <string>
-#include <vector>
-
 #include "business_layer_records.h"
 #include "data_access_layer.h"
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -13,8 +13,8 @@ using namespace std;
   Parameters: data to insert, the user info, and the database to insert in
   Return: the id of the record
 */
-int insert(const std::string &data, const std::string &createdBy,
-           std::vector<Record> &records) {
+int insert(const string &data, const string &createdBy,
+           vector<Record> &records) {
   Record newRecord;
   newRecord.id = getNextId(records);
   newRecord.data = data;
@@ -32,7 +32,7 @@ int insert(const std::string &data, const std::string &createdBy,
   Parameters: the id of the record to delete, the table that the record is
    located in
 */
-void deleteRecord(int id, std::vector<Record> &records) {
+void deleteRecord(int id, vector<Record> &records) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
   if (it != records.end()) {
@@ -47,7 +47,7 @@ void deleteRecord(int id, std::vector<Record> &records) {
   Parameters: id of record to update, the data to update, and the database of
    the record
 */
-void update(int id, const std::string &newData, std::vector<Record> &records) {
+void update(int id, const string &newData, vector<Record> &records) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
   if (it != records.end()) {
@@ -169,7 +169,7 @@ Newly Added
 
 */
 
-void updateLastRead(int id, std::vector<Record> &records) {
+void updateLastRead(int id, vector<Record> &records) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
   if (it != records.end()) {
@@ -181,4 +181,52 @@ void updateLastRead(int id, std::vector<Record> &records) {
   Desc: logs out the current user in the system
   Parameters: the logged in user
 */
-void logout(User *&currentUser) { currentUser = nullptr; }
+bool logout(User *&currentUser) {
+  currentUser = nullptr;
+  return true;
+}
+
+// New patches
+
+Record getRecordById(int id, const vector<Record> &records) {
+  auto temp = find_if(records.begin(), records.end(),
+                      [id](const Record &record) { return record.id == id; });
+
+  if (temp != records.end()) {
+    return *temp;
+  } else {
+    throw invalid_argument("Record with specified ID does not exist.");
+  }
+}
+
+vector<Record> displayRecord(int id, const vector<Record> &records,
+                             User *currentUser) {
+  vector<Record> temp;
+  auto record = getRecordById(id, records);
+  if (record.creator == currentUser->username || currentUser->isManager) {
+    temp.push_back(record);
+  }
+  return temp;
+}
+
+bool compareByData(const Record &a, const Record &b) { return a.data < b.data; }
+
+bool compareById(const Record &a, const Record &b) { return a.id < b.id; }
+
+void sortRecords(vector<Record> &records, bool reverse) {
+  if (reverse) {
+    sort(records.rbegin(), records.rend(), compareByData);
+  } else {
+    sort(records.begin(), records.end(), compareByData);
+  }
+}
+
+void sortRecordsById(vector<Record> &records, bool reverse) {
+  if (reverse) {
+    sort(records.rbegin(), records.rend(), compareById);
+  } else {
+    sort(records.begin(), records.end(), compareById);
+  }
+}
+
+// New patches End
