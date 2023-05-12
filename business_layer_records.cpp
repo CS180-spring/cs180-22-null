@@ -15,9 +15,7 @@ string encryptRecord(const string &password, const string &XOR_KEY) {
   string encrypted_password = password;
   int key_length = XOR_KEY.length();
   for (int i = 0; i < encrypted_password.length(); i++) {
-    if (isalnum(encrypted_password[i])) {
-      encrypted_password[i] = encrypted_password[i] ^ XOR_KEY[i % key_length];
-    }
+    encrypted_password[i] = encrypted_password[i] ^ XOR_KEY[i % key_length];
   }
   return encrypted_password;
 }
@@ -29,17 +27,15 @@ string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
   string password = encrypted_password;
   int key_length = XOR_KEY.length();
   for (int i = 0; i < password.length(); i++) {
-    if (isalnum(password[i])) {
-      password[i] = password[i] ^ XOR_KEY[i % key_length];
-    }
+    password[i] = password[i] ^ XOR_KEY[i % key_length];
   }
   return password;
 }
 
-string generateSignature(const string &str) {
-  hash<string> hasher;
+std::string generateSignature(const std::string &str) {
+  std::hash<std::string> hasher;
   size_t hash = hasher(str);
-  return to_string(hash);
+  return std::to_string(hash);
 }
 
 string getDecryptKey() { // Helper
@@ -89,6 +85,8 @@ void deleteRecord(int id, vector<Record> &records, const string &password) {
     if (it->encryptionType != "NONE") {
       string decryptedData = decryptRecord(it->data, password);
       if (generateSignature(decryptedData) != it->signature) {
+        cout << "decryptedData signature unmatch:"
+             << generateSignature(decryptedData) << endl;
         cout << "Invalid decryption key." << endl;
         return;
       }
@@ -174,6 +172,59 @@ int countTermFrequency(const string &data, const string &term) {
   return count;
 }
 
+/*
+  Function: login
+  Desc: verifies the login credentials of the user and if it's correct, the user
+    is successfully logged in to their account.
+  Parameters: username, password, and the list of users currently in the system
+  Return: the user if the login credentials match a record in the list of users
+    or nullptr if the account doesn't exist or the wrong credentials were used
+*/
+User *login(const string &username, const string &password,
+            vector<User> &users) {
+  for (auto &user : users) {
+    if (user.username == username && user.password == password) {
+      return &user;
+    }
+  }
+  return nullptr;
+}
+
+/*
+  Function: createUser
+  Desc: creates a new account with a username and password,
+    along with assigning level of authority in the system
+  Parameters: the new username, new password, access type, and the list of users
+  in the system Return: the id of the record
+*/
+User *createUser(const string &username, const string &password, bool isManager,
+                 vector<User> &users) {
+  for (auto &user : users) {
+    if (user.username == username) {
+      return nullptr;
+    }
+  }
+  User newUser{username, password, isManager};
+  users.push_back(newUser);
+  return &users.back();
+}
+
+/*
+  Function: isManager
+  Desc: Goes through the list of users in the system to see if they are a
+  manager or not Parameters: the username to search and the list of users in the
+  system
+  Return: true or false depending on if the user is manager. If the user
+  is not in the system, automatically returns as false
+*/
+bool isManager(const string &username, const vector<User> &users) {
+  for (const auto &user : users) {
+    if (user.username == username) {
+      return user.isManager;
+    }
+  }
+  return false;
+}
 
 /*
 
@@ -188,7 +239,15 @@ void updateLastRead(int id, vector<Record> &records) {
     it->last_read = currentDateTime();
   }
 }
-
+/*
+  Function: logout
+  Desc: logs out the current user in the system
+  Parameters: the logged in user
+*/
+bool logout(User *&currentUser) {
+  currentUser = nullptr;
+  return true;
+}
 
 // New patches
 
@@ -212,6 +271,9 @@ vector<Record> displayRecord(int id, const vector<Record> &records,
     if (record.encryptionType != "NONE") {
       record.data = decryptRecord(record.data, password);
       if (generateSignature(record.data) != record.signature) {
+        cout << "decryptedData signature unmatch:"
+             << generateSignature(record.data) << endl;
+        cout << "DEBUG MESSAGE: " << record.data << endl;
         cout << "Invalid decryption key." << endl;
         return temp;
       }
