@@ -8,7 +8,7 @@
 
 using namespace std;
 
-string encryptRecord(const string &password, const string &XOR_KEY) {
+string encryptXOR(const string &password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
   }
@@ -20,7 +20,7 @@ string encryptRecord(const string &password, const string &XOR_KEY) {
   return encrypted_password;
 }
 
-string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
+string decryptXOR(const string &encrypted_password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
   }
@@ -32,10 +32,26 @@ string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
   return password;
 }
 
-std::string generateSignature(const std::string &str) {
-  std::hash<std::string> hasher;
+///
+/// TEA ENCRYPTION
+/// HP 05/11/2023
+
+string encryptTEA(const string &password, const string &TEAKEY){
+  unsigned int p0 = password[0], p1 = password[1], sum = 0;
+  unsigned int delta = 0x9e3779b9;
+  unsigned int k0 = TEAKEY[0], k1 = TEAKEY[1], k2 = TEAKEY[2] , k3 = TEAKEY[3];
+
+  for (int i)
+}
+
+string decryptTEA(const string &password, const string &TEAKEY) {
+  
+}
+
+string generateSignature(const string &str) {
+  hash<string> hasher;
   size_t hash = hasher(str);
-  return std::to_string(hash);
+  return to_string(hash);
 }
 
 string getDecryptKey() { // Helper
@@ -64,9 +80,15 @@ int insert(const string &data, const string &createdBy, vector<Record> &records,
   newRecord.signature =
       generateSignature(data); // This would keep the unencrypted signature
   if (encryption == 1) {
-    newRecord.data = encryptRecord(newRecord.data, cryptKey);
+    newRecord.data = encryptXOR(newRecord.data, cryptKey);
     newRecord.encryptionType = "XOR";
   }
+  /* //KL, 05/11/2023
+  if (encryption == 2) {
+    newRecord.data = encryptTEA(newRecord.data, cryptKey);
+    newRecord.encryptionType = "TEA";
+  }
+  */
   records.push_back(newRecord);
   return newRecord.id;
 }
@@ -83,7 +105,7 @@ void deleteRecord(int id, vector<Record> &records, const string &password) {
 
   if (it != records.end()) {
     if (it->encryptionType != "NONE") {
-      string decryptedData = decryptRecord(it->data, password);
+      string decryptedData = decryptXOR(it->data, password);
       if (generateSignature(decryptedData) != it->signature) {
         cout << "decryptedData signature unmatch:"
              << generateSignature(decryptedData) << endl;
@@ -109,7 +131,7 @@ void update(int id, const string &newData, vector<Record> &records,
 
   if (it != records.end()) {
     if (it->encryptionType != "NONE") {
-      string decryptedData = decryptRecord(it->data, password);
+      string decryptedData = decryptXOR(it->data, password);
       if (generateSignature(decryptedData) != it->signature) {
         cout << "Invalid decryption key." << endl;
         return;
@@ -172,6 +194,66 @@ int countTermFrequency(const string &data, const string &term) {
   return count;
 }
 
+/*
+  Function: login
+  Desc: verifies the login credentials of the user and if it's correct, the user
+    is successfully logged in to their account.
+  Parameters: username, password, and the list of users currently in the system
+  Return: the user if the login credentials match a record in the list of users
+    or nullptr if the account doesn't exist or the wrong credentials were used
+*/
+User *login(const string &username, const string &password,
+            vector<User> &users) {
+  for (auto &user : users) {
+    if (user.username == username && user.password == password) {
+      return &user;
+    }
+  }
+  return nullptr;
+}
+
+/*
+  Function: createUser
+  Desc: creates a new account with a username and password,
+    along with assigning level of authority in the system
+  Parameters: the new username, new password, access type, and the list of users
+  in the system Return: the id of the record
+*/
+User *createUser(const string &username, const string &password, bool isManager,
+                 vector<User> &users) {
+  for (auto &user : users) {
+    if (user.username == username) {
+      return nullptr;
+    }
+  }
+  User newUser{username, password, isManager};
+  users.push_back(newUser);
+  return &users.back();
+}
+
+/*
+  Function: isManager
+  Desc: Goes through the list of users in the system to see if they are a
+  manager or not Parameters: the username to search and the list of users in the
+  system
+  Return: true or false depending on if the user is manager. If the user
+  is not in the system, automatically returns as false
+*/
+bool isManager(const string &username, const vector<User> &users) {
+  for (const auto &user : users) {
+    if (user.username == username) {
+      return user.isManager;
+    }
+  }
+  return false;
+}
+
+/*
+
+Newly Added
+
+*/
+
 void updateLastRead(int id, vector<Record> &records) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
@@ -179,6 +261,17 @@ void updateLastRead(int id, vector<Record> &records) {
     it->last_read = currentDateTime();
   }
 }
+/*
+  Function: logout
+  Desc: logs out the current user in the system
+  Parameters: the logged in user
+*/
+bool logout(User *&currentUser) {
+  currentUser = nullptr;
+  return true;
+}
+
+// New patches
 
 Record getRecordById(int id, const vector<Record> &records) {
   auto temp = find_if(records.begin(), records.end(),
@@ -198,7 +291,7 @@ vector<Record> displayRecord(int id, const vector<Record> &records,
 
   if (record.creator == currentUser->username || currentUser->isManager) {
     if (record.encryptionType != "NONE") {
-      record.data = decryptRecord(record.data, password);
+      record.data = decryptXOR(record.data, password);
       if (generateSignature(record.data) != record.signature) {
         cout << "decryptedData signature unmatch:"
              << generateSignature(record.data) << endl;
