@@ -10,6 +10,8 @@
 
 using namespace std;
 
+string Universal_password = "NULL";
+
 // CHATGPT HELP
 void setStdinEcho(bool enable) {
   termios tty;
@@ -95,6 +97,7 @@ int main() {
     cout << "Enter password: ";
     cin.ignore();
     password = getPassword();
+    Universal_password = password;
 
     if (choice == 1) {
       currentUser = login(username, password, users);
@@ -121,6 +124,7 @@ int main() {
       }
       currentUser = createUser(username, password, isManager, users);
       saveUsers(users);
+      Universal_password = password;
       if (!currentUser) {
         cout << "User name is taken. Please try again." << endl;
       } else {
@@ -199,44 +203,95 @@ int main() {
         switch (choice) {
         case 0: {
           int id;
+          string password;
           cout << "Enter record ID to display: ";
           cin >> id;
-          auto record = displayRecord(id, records, currentUser);
-          if (!record.empty()) {
-            cout << "Record ID: " << record[0].id
-                 << "\nData: " << record[0].data << endl;
+          cin.ignore();
+
+          Record record = getRecordById(id, records);
+          if (record.encryptionType != "NONE") {
+            cout << "This record is protected. Please enter the password: ";
+            getline(cin, password);
           } else {
-            cout << "Either the record does not exist or you do not have "
-                    "permission to view it."
+            password = "NONE";
+          }
+
+          auto decryptedRecord =
+              displayRecord(id, records, currentUser, password);
+          if (!decryptedRecord.empty()) {
+            cout << "Record ID: " << decryptedRecord[0].id
+                 << "\nData: " << decryptedRecord[0].data << endl;
+          } else {
+            cout << "Either the record does not exist, you do not have "
+                    "permission to view it, or the password is incorrect."
                  << endl;
           }
           break;
         }
+
         case 1: {
           string data;
+          string temp;
+          string en_key;
           cin.ignore();
           cout << "Enter data: ";
           getline(cin, data);
-          int id = insert(data, currentUser->username, records);
-          cout << "Inserted record with id: " << id << endl;
+          cout << "Do you want to encrypt this data? (Y/N)" << endl
+               << "Warning: using encryption would not allow you to do a "
+                  "search on this record"
+               << endl;
+          getline(cin, temp);
+          if (temp == "Y") {
+            cout << "Please enter a 1-6 leghth password for this particular "
+                    "data. (PLEASE REMEMBER THIS KEY)"
+                 << endl;
+            getline(cin, en_key);
+            int id = insert(data, currentUser->username, records, 1, en_key);
+            cout << "Inserted record with id: " << id << endl;
+          } else {
+            int id = insert(data, currentUser->username, records, 0, "NONE");
+            cout << "Inserted record with id: " << id << endl;
+          }
+
           break;
         }
         case 2: {
           int id;
+          string password;
           cout << "Enter id to delete: ";
           cin >> id;
-          deleteRecord(id, records);
+          cin.ignore();
+
+          Record record = getRecordById(id, records);
+          if (record.encryptionType != "NONE") {
+            cout << "This record is protected. Please enter the password: ";
+            getline(cin, password);
+          } else {
+            password = "NONE";
+          }
+
+          deleteRecord(id, records, password);
           break;
         }
         case 3: {
           int id;
           string newData;
+          string password;
           cout << "Enter id to update: ";
           cin >> id;
           cin.ignore();
+
+          Record record = getRecordById(id, records);
+          if (record.encryptionType != "NONE") {
+            cout << "This record is protected. Please enter the password: ";
+            getline(cin, password);
+          } else {
+            password = "NONE";
+          }
+
           cout << "Enter new data: ";
           getline(cin, newData);
-          update(id, newData, records);
+          update(id, newData, records, password);
           break;
         }
         case 4: {
