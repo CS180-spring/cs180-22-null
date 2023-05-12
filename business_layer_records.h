@@ -1,11 +1,14 @@
-#ifndef BUSINESS_LAYER_RECORDS_H
-#define BUSINESS_LAYER_RECORDS_H
+#ifndef BUSINESS_LOGIC_LAYER_H
+#define BUSINESS_LOGIC_LAYER_H
 
-#include "business_layer_user.h"
 #include <string>
 #include <vector>
 
-
+struct User {
+  std::string username;
+  std::string password;
+  bool isManager;
+};
 
 struct Record {
   int id;
@@ -18,10 +21,11 @@ struct Record {
   std::string signature;
 };
 
-std::string encryptRecord(const std::string &password,
-                          const std::string &XORKEY);
-std::string decryptRecord(const std::string &password,
-                          const std::string &XORKEY);
+std::string encryptXOR(const std::string &password, const std::string &XORKEY);
+std::string decryptXOR(const std::string &password, const std::string &XORKEY);
+
+std::string encryptTEA(const std::string &password, const std::string &TEAKEY);
+std::string decryptTEA(const std::string &password, const std::string &TEAKEY);
 
 int getNextId(const std::vector<Record> &records);
 std::string currentDateTime();
@@ -39,8 +43,13 @@ std::vector<Record> filterByKeyword(const std::vector<Record> &records,
 std::vector<Record> filterByCreator(const std::vector<Record> &records,
                                     const std::string &createdBy);
 int countTermFrequency(const std::string &data, const std::string &term);
-
+User *login(const std::string &username, const std::string &password,
+            std::vector<User> &users);
+User *createUser(const std::string &username, const std::string &password,
+                 bool isManager, std::vector<User> &users);
+bool isManager(const std::string &username, const std::vector<User> &users);
 void updateLastRead(int id, std::vector<Record> &records);
+bool logout(User *&currentUser);
 
 Record getRecordById(int id, const std::vector<Record> &records);
 std::vector<Record> displayRecord(int id, const std::vector<Record> &records,
@@ -51,4 +60,4 @@ void sortRecordsById(std::vector<Record> &records, bool reverse);
 bool compareByData(const Record &a, const Record &b);
 bool compareById(const Record &a, const Record &b);
 
-#endif // BUSINESS_LAYER_RECORDS_H
+#endif // BUSINESS_LOGIC_LAYER_H
