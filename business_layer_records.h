@@ -1,14 +1,11 @@
 #ifndef BUSINESS_LAYER_RECORDS_H
 #define BUSINESS_LAYER_RECORDS_H
 
+#include "business_layer_user.h"
 #include <string>
 #include <vector>
 
-struct User {
-  std::string username;
-  std::string password;
-  bool isManager;
-};
+
 
 struct Record {
   int id;
