@@ -15,30 +15,6 @@
 using json = nlohmann::json;
 using namespace std;
 
-const string XOR_KEY = "TEAMNULL";
-
-string encryptPassword(const string &password) {
-  string encrypted_password = password;
-  int key_length = XOR_KEY.length();
-  for (int i = 0; i < encrypted_password.length(); i++) {
-    if (isalnum(encrypted_password[i])) {
-      encrypted_password[i] = encrypted_password[i] ^ XOR_KEY[i % key_length];
-    }
-  }
-  return encrypted_password;
-}
-
-string decryptPassword(const string &encrypted_password) {
-  string password = encrypted_password;
-  int key_length = XOR_KEY.length();
-  for (int i = 0; i < password.length(); i++) {
-    if (isalnum(password[i])) {
-      password[i] = password[i] ^ XOR_KEY[i % key_length];
-    }
-  }
-  return password;
-}
-
 vector<Record> loadRecords() {
   vector<Record> records;
 
@@ -55,6 +31,8 @@ vector<Record> loadRecords() {
       record.timestamp = j_record["timestamp"];
       record.last_modified = j_record["last_modified"];
       record.last_read = j_record["last_read"];
+      record.encryptionType = j_record["encryptionType"];
+      record.signature = j_record["signature"];
       records.push_back(record);
     }
 
@@ -73,7 +51,9 @@ void saveRecords(const vector<Record> &records) {
                      {"creator", record.creator},
                      {"timestamp", record.timestamp},
                      {"last_modified", record.last_modified},
-                     {"last_read", record.last_read}};
+                     {"last_read", record.last_read},
+                     {"encryptionType", record.encryptionType},
+                     {"signature", record.signature}};
     j_records.push_back(j_record);
   }
 
