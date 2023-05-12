@@ -1,5 +1,6 @@
 #include "presentation_layer.h"
 #include "business_layer_records.h"
+#include "business_layer_user.h"
 #include "data_access_layer.h"
 #include <iomanip>
 #include <iostream>
