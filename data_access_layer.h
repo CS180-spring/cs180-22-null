@@ -6,8 +6,6 @@
 #include <vector>
 
 std::vector<Record> loadRecords();
-std::string encryptPassword(const std::string &password);
-std::string decryptPassword(const std::string &encrypted_password);
 void saveRecords(const std::vector<Record> &records);
 std::vector<User> loadUsers();
 void saveUsers(const std::vector<User> &users);
