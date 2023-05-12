@@ -1,11 +1,53 @@
 #include "business_layer_records.h"
 #include "data_access_layer.h"
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 using namespace std;
+
+string encryptRecord(const string &password, const string &XOR_KEY) {
+  if (XOR_KEY.empty()) {
+    throw invalid_argument("XOR_KEY must not be empty.");
+  }
+  string encrypted_password = password;
+  int key_length = XOR_KEY.length();
+  for (int i = 0; i < encrypted_password.length(); i++) {
+    if (isalnum(encrypted_password[i])) {
+      encrypted_password[i] = encrypted_password[i] ^ XOR_KEY[i % key_length];
+    }
+  }
+  return encrypted_password;
+}
+
+string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
+  if (XOR_KEY.empty()) {
+    throw invalid_argument("XOR_KEY must not be empty.");
+  }
+  string password = encrypted_password;
+  int key_length = XOR_KEY.length();
+  for (int i = 0; i < password.length(); i++) {
+    if (isalnum(password[i])) {
+      password[i] = password[i] ^ XOR_KEY[i % key_length];
+    }
+  }
+  return password;
+}
+
+string generateSignature(const string &str) {
+  hash<string> hasher;
+  size_t hash = hasher(str);
+  return to_string(hash);
+}
+
+string getDecryptKey() { // Helper
+  string key;
+  cout << "Enter the decryption key: ";
+  getline(cin, key);
+  return key;
+}
 
 /*
   Function: insert
@@ -13,8 +55,8 @@ using namespace std;
   Parameters: data to insert, the user info, and the database to insert in
   Return: the id of the record
 */
-int insert(const string &data, const string &createdBy,
-           vector<Record> &records) {
+int insert(const string &data, const string &createdBy, vector<Record> &records,
+           const int encryption, const string &cryptKey) {
   Record newRecord;
   newRecord.id = getNextId(records);
   newRecord.data = data;
@@ -22,6 +64,13 @@ int insert(const string &data, const string &createdBy,
   newRecord.timestamp = currentDateTime();
   newRecord.last_modified = currentDateTime();
   newRecord.last_read = "";
+  newRecord.encryptionType = "NONE";
+  newRecord.signature =
+      generateSignature(data); // This would keep the unencrypted signature
+  if (encryption == 1) {
+    newRecord.data = encryptRecord(newRecord.data, cryptKey);
+    newRecord.encryptionType = "XOR";
+  }
   records.push_back(newRecord);
   return newRecord.id;
 }
@@ -32,11 +81,19 @@ int insert(const string &data, const string &createdBy,
   Parameters: the id of the record to delete, the table that the record is
    located in
 */
-void deleteRecord(int id, vector<Record> &records) {
+void deleteRecord(int id, vector<Record> &records, const string &password) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
+
   if (it != records.end()) {
-    it->last_modified = currentDateTime(); // Add this line
+    if (it->encryptionType != "NONE") {
+      string decryptedData = decryptRecord(it->data, password);
+      if (generateSignature(decryptedData) != it->signature) {
+        cout << "Invalid decryption key." << endl;
+        return;
+      }
+    }
+    it->last_modified = currentDateTime();
     records.erase(it);
   }
 }
@@ -47,15 +104,23 @@ void deleteRecord(int id, vector<Record> &records) {
   Parameters: id of record to update, the data to update, and the database of
    the record
 */
-void update(int id, const string &newData, vector<Record> &records) {
+void update(int id, const string &newData, vector<Record> &records,
+            const string &password) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
+
   if (it != records.end()) {
+    if (it->encryptionType != "NONE") {
+      string decryptedData = decryptRecord(it->data, password);
+      if (generateSignature(decryptedData) != it->signature) {
+        cout << "Invalid decryption key." << endl;
+        return;
+      }
+    }
     it->data = newData;
-    it->last_modified = currentDateTime(); // Add this line
+    it->last_modified = currentDateTime();
   }
 }
-
 /*
   Function: filterByKeyword
   Desc: Searches the database table for a specific keyword and returns those
@@ -109,59 +174,6 @@ int countTermFrequency(const string &data, const string &term) {
   return count;
 }
 
-/*
-  Function: login
-  Desc: verifies the login credentials of the user and if it's correct, the user
-    is successfully logged in to their account.
-  Parameters: username, password, and the list of users currently in the system
-  Return: the user if the login credentials match a record in the list of users
-    or nullptr if the account doesn't exist or the wrong credentials were used
-*/
-User *login(const string &username, const string &password,
-            vector<User> &users) {
-  for (auto &user : users) {
-    if (user.username == username && user.password == password) {
-      return &user;
-    }
-  }
-  return nullptr;
-}
-
-/*
-  Function: createUser
-  Desc: creates a new account with a username and password,
-    along with assigning level of authority in the system
-  Parameters: the new username, new password, access type, and the list of users
-  in the system Return: the id of the record
-*/
-User *createUser(const string &username, const string &password, bool isManager,
-                 vector<User> &users) {
-  for (auto &user : users) {
-    if (user.username == username) {
-      return nullptr;
-    }
-  }
-  User newUser{username, password, isManager};
-  users.push_back(newUser);
-  return &users.back();
-}
-
-/*
-  Function: isManager
-  Desc: Goes through the list of users in the system to see if they are a
-  manager or not Parameters: the username to search and the list of users in the
-  system
-  Return: true or false depending on if the user is manager. If the user
-  is not in the system, automatically returns as false
-*/
-bool isManager(const string &username, const vector<User> &users) {
-  for (const auto &user : users) {
-    if (user.username == username) {
-      return user.isManager;
-    }
-  }
-  return false;
-}
 
 /*
 
@@ -176,15 +188,7 @@ void updateLastRead(int id, vector<Record> &records) {
     it->last_read = currentDateTime();
   }
 }
-/*
-  Function: logout
-  Desc: logs out the current user in the system
-  Parameters: the logged in user
-*/
-bool logout(User *&currentUser) {
-  currentUser = nullptr;
-  return true;
-}
+
 
 // New patches
 
@@ -200,10 +204,18 @@ Record getRecordById(int id, const vector<Record> &records) {
 }
 
 vector<Record> displayRecord(int id, const vector<Record> &records,
-                             User *currentUser) {
+                             User *currentUser, const string &password) {
   vector<Record> temp;
   auto record = getRecordById(id, records);
+
   if (record.creator == currentUser->username || currentUser->isManager) {
+    if (record.encryptionType != "NONE") {
+      record.data = decryptRecord(record.data, password);
+      if (generateSignature(record.data) != record.signature) {
+        cout << "Invalid decryption key." << endl;
+        return temp;
+      }
+    }
     temp.push_back(record);
   }
   return temp;
