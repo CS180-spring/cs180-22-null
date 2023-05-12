@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// Password and XOR key as input. Outputs encrypted password string.
 string encryptRecord(const string &password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
@@ -20,6 +21,7 @@ string encryptRecord(const string &password, const string &XOR_KEY) {
   return encrypted_password;
 }
 
+// Takes encrypted password and XOR key as input. Outputs decrypted password.
 string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
@@ -32,6 +34,7 @@ string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
   return password;
 }
 
+// Returns string signature by calculating hash.
 std::string generateSignature(const std::string &str) {
   std::hash<std::string> hasher;
   size_t hash = hasher(str);
