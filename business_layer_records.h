@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-
-
 struct Record {
   int id;
+  int tableID;
+  std::string tableName;
   std::string data;
   std::string timestamp;
   std::string last_modified;
@@ -18,10 +18,14 @@ struct Record {
   std::string signature;
 };
 
-std::string encryptRecord(const std::string &password,
-                          const std::string &XORKEY);
-std::string decryptRecord(const std::string &password,
-                          const std::string &XORKEY);
+std::string encryptXOR(const std::string &password, const std::string &XORKEY);
+std::string decryptXOR(const std::string &encrypted_password,
+                       const std::string &XORKEY);
+std::vector<unsigned int> encryptTEA(const std::vector<unsigned int> &password,
+                                     const std::vector<unsigned int> TEAKEY);
+std::vector<unsigned int>
+decryptTEA(const std::vector<unsigned int> &encrypted_password,
+           const std::vector<unsigned int> TEAKEY);
 
 int getNextId(const std::vector<Record> &records);
 std::string currentDateTime();

@@ -2,10 +2,18 @@
 #define BUSINESS_LAYER_TABLES_H
 
 #include "business_layer_records.h"
+#include "json.hpp"
 
-void createNewTable(std::vector<Record> &records);
+struct Table {
+    int id;
+    std::string owner;
+    std::string name;
+};
 
-void loadExistingTable(std::vector<Record> &records);
+
+int createNewTable(const std::string &creator, std::string &tableName, std::vector<Table> &tables);
+
+Table *loadExistingTable(const int& tableID, std::vector<Table>& tables);
 
 void displayAllTables(const std::vector<Record> &records);
 

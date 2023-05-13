@@ -1,5 +1,5 @@
 #include "business_layer_records.h"
-#include "data_access_layer.h"
+#include "data_layer_records.h"
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-string encryptRecord(const string &password, const string &XOR_KEY) {
+string encryptXOR(const string &password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
   }
@@ -20,7 +20,7 @@ string encryptRecord(const string &password, const string &XOR_KEY) {
   return encrypted_password;
 }
 
-string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
+string decryptXOR(const string &encrypted_password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
   }
@@ -32,10 +32,52 @@ string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
   return password;
 }
 
-std::string generateSignature(const std::string &str) {
-  std::hash<std::string> hasher;
+///
+/// TEA ENCRYPTION
+/// HP 05/11/2023
+
+vector<unsigned int> encryptTEA(const vector<unsigned int> &password,
+                                const vector<unsigned int> TEAKEY) {
+  unsigned int p0 = password[0], p1 = password[1], sum = 0;
+  unsigned int delta = 0x9e3779b9;
+  unsigned int k0 = TEAKEY[0], k1 = TEAKEY[1], k2 = TEAKEY[2], k3 = TEAKEY[3];
+
+  for (int i = 0; i < 32; ++i) {
+    sum += delta;
+    p0 += ((p1 << 4) + k0) ^ (p1 + sum) ^ ((p1 >> 5) + k1);
+    p1 += ((p0 << 4) + k2) ^ (p0 + sum) ^ ((p0 >> 5) + k3);
+  }
+
+  vector<unsigned int> encrypted_password{};
+  encrypted_password[0] = p0;
+  encrypted_password[1] = p1;
+
+  return encrypted_password;
+}
+
+vector<unsigned int> decryptTEA(const vector<unsigned int> &encrypted_password,
+                                const vector<unsigned int> TEAKEY) {
+  unsigned int p0 = encrypted_password[0], p1 = encrypted_password[1],
+               sum = 0xC6EF3720, i;
+  unsigned int delta = 0x9e3779b9;
+  unsigned int k0 = TEAKEY[0], k1 = TEAKEY[1], k2 = TEAKEY[2], k3 = TEAKEY[3];
+  for (i = 0; i < 32; i++) {
+    p1 -= ((p0 << 4) + k2) ^ (p0 + sum) ^ ((p0 >> 5) + k3);
+    p0 -= ((p1 << 4) + k0) ^ (p1 + sum) ^ ((p1 >> 5) + k1);
+    sum -= delta;
+  }
+
+  vector<unsigned int> password{};
+  password[0] = p0;
+  password[1] = p1;
+
+  return password;
+}
+
+string generateSignature(const string &str) {
+  hash<string> hasher;
   size_t hash = hasher(str);
-  return std::to_string(hash);
+  return to_string(hash);
 }
 
 string getDecryptKey() { // Helper
@@ -64,9 +106,15 @@ int insert(const string &data, const string &createdBy, vector<Record> &records,
   newRecord.signature =
       generateSignature(data); // This would keep the unencrypted signature
   if (encryption == 1) {
-    newRecord.data = encryptRecord(newRecord.data, cryptKey);
+    newRecord.data = encryptXOR(newRecord.data, cryptKey);
     newRecord.encryptionType = "XOR";
   }
+  /*// KL, 05/11/2023
+  if (encryption == 2) {
+    newRecord.data = encryptTEA(newRecord.data, cryptKey);
+    newRecord.encryptionType = "TEA";
+  }
+*/
   records.push_back(newRecord);
   return newRecord.id;
 }
@@ -83,7 +131,7 @@ void deleteRecord(int id, vector<Record> &records, const string &password) {
 
   if (it != records.end()) {
     if (it->encryptionType != "NONE") {
-      string decryptedData = decryptRecord(it->data, password);
+      string decryptedData = decryptXOR(it->data, password);
       if (generateSignature(decryptedData) != it->signature) {
         cout << "decryptedData signature unmatch:"
              << generateSignature(decryptedData) << endl;
@@ -109,7 +157,7 @@ void update(int id, const string &newData, vector<Record> &records,
 
   if (it != records.end()) {
     if (it->encryptionType != "NONE") {
-      string decryptedData = decryptRecord(it->data, password);
+      string decryptedData = decryptXOR(it->data, password);
       if (generateSignature(decryptedData) != it->signature) {
         cout << "Invalid decryption key." << endl;
         return;
@@ -123,8 +171,8 @@ void update(int id, const string &newData, vector<Record> &records,
   Function: filterByKeyword
   Desc: Searches the database table for a specific keyword and returns those
     records that match Parameters: the database table to parse and the keyword
-  to search Return: all the filtered records in the database table pertaining to
-  the keyword
+  to search Return: all the filtered records in the database table pertaining
+  to the keyword
 */
 vector<Record> filterByKeyword(const vector<Record> &records,
                                const string &keyword) {
@@ -140,10 +188,9 @@ vector<Record> filterByKeyword(const vector<Record> &records,
 /*
   Function: filterByCreator
   Desc: Searches the database table for records that were created by a
-    specific user Parameters: the database table to parse and the user to search
-    for
-  Return: all the filtered records in the database belonging to the specified
-  user
+    specific user Parameters: the database table to parse and the user to
+  search for Return: all the filtered records in the database belonging to the
+  specified user
 */
 vector<Record> filterByCreator(const vector<Record> &records,
                                const string &createdBy) {
@@ -197,8 +244,8 @@ vector<Record> displayRecord(int id, const vector<Record> &records,
   auto record = getRecordById(id, records);
 
   if (record.creator == currentUser->username || currentUser->isManager) {
-    if (record.encryptionType != "NONE") {
-      record.data = decryptRecord(record.data, password);
+    if (record.encryptionType == "XOR") {
+      record.data = decryptXOR(record.data, password);
       if (generateSignature(record.data) != record.signature) {
         cout << "decryptedData signature unmatch:"
              << generateSignature(record.data) << endl;
