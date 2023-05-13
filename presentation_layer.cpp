@@ -1,7 +1,13 @@
 #include "presentation_layer.h"
 #include "business_layer_records.h"
+#include "business_layer_tables.h"
 #include "business_layer_user.h"
-#include "data_access_layer.h"
+#include "data_layer_records.h"
+#include "data_layer_tables.h"
+#include "data_layer_users.h"
+#include "presentation_layer_table.h"
+#include "useragreement.h"
+
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -66,6 +72,7 @@ void deleteTable(vector<Record> &records) {
 }
 
 int main() {
+  vector<Table> tables = loadTables();
   vector<Record> records = loadRecords();
   vector<User> users = loadUsers();
 
@@ -76,9 +83,16 @@ int main() {
   }
 
   User *currentUser = nullptr;
+  Table *currentTable = nullptr;
   User *debug = nullptr; // Later on, convert this into Table ptr
+  bool tableFlag = false;
+	bool userAgreement = true; // Enter first loop
 
-  while (!currentUser) {
+  while (!currentUser && userAgreement) {
+    bool userAgreement = getUserAgreement();
+    if (userAgreement == false) {
+      break;
+    }
     int choice;
     cout << "╔══════════════════════════════════════════════╗" << endl;
     cout << "║                                              ║" << endl;
@@ -106,6 +120,7 @@ int main() {
         cout << "Invalid credentials. Please try again." << endl;
       } else {
         cout << "Welcome, " << currentUser->username << "!" << endl;
+        tableFlag = true;
       }
     } else if (choice == 2) {
       bool isManager = false;
@@ -128,13 +143,16 @@ int main() {
       Universal_password = password;
       if (!currentUser) {
         cout << "User name is taken. Please try again." << endl;
+        tableFlag = false;
       } else {
         cout << "User created successfully!" << endl;
+        tableFlag = true;
       }
     } else {
       cout << "Invalid choice! Please try again." << endl;
     }
-    while (currentUser) {
+
+    while (currentUser && tableFlag) {
       int choice;
       cout << "╔══════════════════════════════════════════════╗" << endl;
       cout << "║                                              ║" << endl;
@@ -153,250 +171,267 @@ int main() {
       cin >> choice;
 
       switch (choice) {
-      case 1:
-        cout << "Option 1: Create a table." << endl;
+      case 1: {
+        string name = "";
+        cin.ignore();
+        cout << "Enter a name for your table: ";
+        getline(cin, name);
+        int tableID = createNewTable(currentUser->username, name, tables);
+        cout << "Created new table with id: " << tableID << endl;
+        tableFlag = false;
         break;
+      } // end case 1
       case 2:
-        cout << "Option 2: View all tables." << endl;
+        printTables(currentUser);
         break;
-      case 3:
-        cout << "Option 3: Go into a table." << endl;
+      case 3: {
+        int tableID = 0;
+        cout << "Enter the ID of table to go into: " << endl;
+        cin >> tableID;
+        cin.ignore();
+        currentTable = loadExistingTable(tableID, tables);
+        if (!currentTable) {
+          cerr << "Oops! That table doesn't exist. Try again!" << endl;
+        } else {
+          cout << "Loading " << currentTable->name << "..." << endl;
+        }
+        tableFlag = false;
         break;
+      }
       case 4:
         cout << "Option 4: Delete a table." << endl;
+        tableFlag = false;
         break;
       case 5:
         cout << "Exiting NullDB. Goodbye!" << endl;
         return 0;
       case 6:
         debug = currentUser;
+        tableFlag = false;
         break;
       default:
         cout << "Invalid choice! Please try again." << endl;
       }
+    } // end TABLE while
 
-      while (true && currentUser) {
-        int choice;
-        cout << "╔══════════════════════════════════════════════╗" << endl;
-        cout << "║                                              ║" << endl;
-        cout << "║        Welcome to the NullDB!                ║" << endl;
-        cout << "║                                              ║" << endl;
-        cout << "╠══════════════════════════════════════════════╣" << endl;
-        cout << "║ Welcome, " << currentUser->username
-             << setw(39 - currentUser->username.length()) << "║" << endl;
-        cout << "╠══════════════════════════════════════════════╣" << endl;
-        cout << "║ 0. Display by ID                             ║" << endl;
-        cout << "║ 1. Insert                                    ║" << endl;
-        cout << "║ 2. Delete                                    ║" << endl;
-        cout << "║ 3. Update                                    ║" << endl;
-        cout << "║ 4. Display Records                           ║" << endl;
-        cout << "║ 5. Keyword Search                            ║" << endl;
-        cout << "║ 6. Term Frequency                            ║" << endl;
-        cout << "║ 7. Sorting (Sub-Menu)                        ║" << endl;
-        cout << "║ 8. Save and Exit                             ║" << endl;
-        cout << "║ 9. Log out                                   ║" << endl;
-        cout << "║                                              ║" << endl;
-        cout << "║ Enter your choice:                           ║" << endl;
-        cout << "╚══════════════════════════════════════════════╝" << endl;
+    while (true && currentUser) {
+      int choice;
+      cout << "╔══════════════════════════════════════════════╗" << endl;
+      cout << "║                                              ║" << endl;
+      cout << "║        Welcome to the NullDB!                ║" << endl;
+      cout << "║                                              ║" << endl;
+      cout << "╠══════════════════════════════════════════════╣" << endl;
+      cout << "║ Welcome, " << currentUser->username
+           << setw(39 - currentUser->username.length()) << "║" << endl;
+      cout << "╠══════════════════════════════════════════════╣" << endl;
+      cout << "║ 0. Display by ID                             ║" << endl;
+      cout << "║ 1. Insert                                    ║" << endl;
+      cout << "║ 2. Delete                                    ║" << endl;
+      cout << "║ 3. Update                                    ║" << endl;
+      cout << "║ 4. Display Records                           ║" << endl;
+      cout << "║ 5. Keyword Search                            ║" << endl;
+      cout << "║ 6. Term Frequency                            ║" << endl;
+      cout << "║ 7. Sorting (Sub-Menu)                        ║" << endl;
+      cout << "║ 8. Save and Exit                             ║" << endl;
+      cout << "║ 9. Log out                                   ║" << endl;
+      cout << "║                                              ║" << endl;
+      cout << "║ Enter your choice:                           ║" << endl;
+      cout << "╚══════════════════════════════════════════════╝" << endl;
 
-        cin >> choice;
+      cin >> choice;
 
-        switch (choice) {
-        case 0: {
-          int id;
-          string password;
-          cout << "Enter record ID to display: ";
-          cin >> id;
-          cin.ignore();
+      switch (choice) {
+      case 0: {
+        int id;
+        string password;
+        cout << "Enter record ID to display: ";
+        cin >> id;
+        cin.ignore();
 
-          Record record = getRecordById(id, records);
-          if (record.encryptionType != "NONE") {
-            cout << "This record is protected. Please enter the password: ";
-            getline(cin, password);
-          } else {
-            password = "NONE";
-          }
-
-          auto decryptedRecord =
-              displayRecord(id, records, currentUser, password);
-          if (!decryptedRecord.empty()) {
-            cout << "Record ID: " << decryptedRecord[0].id
-                 << "\nData: " << decryptedRecord[0].data << endl;
-          } else {
-            cout << "Either the record does not exist, you do not have "
-                    "permission to view it, or the password is incorrect."
-                 << endl;
-          }
-          break;
+        Record record = getRecordById(id, records);
+        if (record.encryptionType != "NONE") {
+          cout << "This record is protected. Please enter the password: ";
+          getline(cin, password);
+        } else {
+          password = "NONE";
         }
 
-        case 1: {
-          string data;
-          string temp;
-          string en_key;
-          cin.ignore();
-          cout << "Enter data: ";
-          getline(cin, data);
-          cout << "Do you want to encrypt this data? (Y/N)" << endl
-               << "Warning: using encryption would not allow you to do a "
-                  "search on this record"
+        auto decryptedRecord =
+            displayRecord(id, records, currentUser, password);
+        if (!decryptedRecord.empty()) {
+          cout << "Record ID: " << decryptedRecord[0].id
+               << "\nData: " << decryptedRecord[0].data << endl;
+        } else {
+          cout << "Either the record does not exist, you do not have "
+                  "permission to view it, or the password is incorrect."
                << endl;
-          getline(cin, temp);
-          if (temp == "Y") {
-            cout << "Please enter a 1-6 leghth password for this particular "
-                    "data. (PLEASE REMEMBER THIS KEY)"
-                 << endl;
-            getline(cin, en_key);
-            int id = insert(data, currentUser->username, records, 1, en_key);
-            cout << "Inserted record with id: " << id << endl;
+        }
+        break;
+      }
+
+      case 1: {
+        string data;
+        string temp;
+        string en_key;
+        cin.ignore();
+        cout << "Enter data: ";
+        getline(cin, data);
+        cout << "Do you want to encrypt this data? (Y/N)" << endl
+             << "Warning: using encryption would not allow you to do a "
+                "search on this record"
+             << endl;
+        getline(cin, temp);
+        if (temp == "Y") {
+          cout << "Please enter a 1-6 leghth password for this particular "
+                  "data. (PLEASE REMEMBER THIS KEY)"
+               << endl;
+          getline(cin, en_key);
+          int id = insert(data, currentUser->username, records, 1, en_key);
+          cout << "Inserted record with id: " << id << endl;
+        } else {
+          int id = insert(data, currentUser->username, records, 0, "NONE");
+          cout << "Inserted record with id: " << id << endl;
+        }
+
+        break;
+      }
+      case 2: {
+        int id;
+        string password;
+        cout << "Enter id to delete: ";
+        cin >> id;
+        cin.ignore();
+
+        Record record = getRecordById(id, records);
+        if (record.encryptionType != "NONE") {
+          cout << "This record is protected. Please enter the password: ";
+          getline(cin, password);
+        } else {
+          password = "NONE";
+        }
+
+        deleteRecord(id, records, password);
+        break;
+      }
+      case 3: {
+        int id;
+        string newData;
+        string password;
+        cout << "Enter id to update: ";
+        cin >> id;
+        cin.ignore();
+
+        Record record = getRecordById(id, records);
+        if (record.encryptionType != "NONE") {
+          cout << "This record is protected. Please enter the password: ";
+          getline(cin, password);
+        } else {
+          password = "NONE";
+        }
+
+        cout << "Enter new data: ";
+        getline(cin, newData);
+        update(id, newData, records, password);
+        break;
+      }
+      case 4: {
+        for (const auto &record :
+             filterByCreator(records, currentUser->username)) {
+          updateLastRead(record.id, records);
+          cout << record.id << ": " << record.data
+               << " (Created at: " << record.timestamp
+               << ", Last modified: " << record.last_modified
+               << ", Last read: ";
+          if (record.last_read.empty()) {
+            cout << "Never been read";
           } else {
-            int id = insert(data, currentUser->username, records, 0, "NONE");
-            cout << "Inserted record with id: " << id << endl;
+            cout << record.last_read;
           }
-
-          break;
+          cout << ")" << endl;
         }
-        case 2: {
-          int id;
-          string password;
-          cout << "Enter id to delete: ";
-          cin >> id;
-          cin.ignore();
-
-          Record record = getRecordById(id, records);
-          if (record.encryptionType != "NONE") {
-            cout << "This record is protected. Please enter the password: ";
-            getline(cin, password);
-          } else {
-            password = "NONE";
+        break;
+      }
+      case 5: {
+        string keyword;
+        cout << "Enter keyword: ";
+        cin >> keyword;
+        for (const auto &record : filterByKeyword(
+                 filterByCreator(records, currentUser->username), keyword)) {
+          cout << record.id << ": " << record.data
+               << " (Created at: " << record.timestamp << ")" << endl;
+        }
+        break;
+      }
+      case 6: {
+        string term;
+        cout << "Enter term: ";
+        cin >> term;
+        int totalFrequency = 0;
+        for (const auto &record :
+             filterByCreator(records, currentUser->username)) {
+          int frequency = countTermFrequency(record.data, term);
+          totalFrequency += frequency;
+          if (frequency > 0) {
+            cout << "Record ID " << record.id << ": " << frequency
+                 << " occurrences" << endl;
           }
+        }
+        cout << "Total occurrences of term \"" << term
+             << "\": " << totalFrequency << endl;
+        break;
+      }
+      case 7: {
+        {
+          int sortChoice;
+          cout << "Sort Menu\n1. Sort Records (A-Z, Z-A)\n2. Sort Records by "
+                  "ID (Min to Max, Max to Min)\nEnter your choice: ";
+          cin >> sortChoice;
 
-          deleteRecord(id, records, password);
-          break;
-        }
-        case 3: {
-          int id;
-          string newData;
-          string password;
-          cout << "Enter id to update: ";
-          cin >> id;
-          cin.ignore();
-
-          Record record = getRecordById(id, records);
-          if (record.encryptionType != "NONE") {
-            cout << "This record is protected. Please enter the password: ";
-            getline(cin, password);
-          } else {
-            password = "NONE";
-          }
-
-          cout << "Enter new data: ";
-          getline(cin, newData);
-          update(id, newData, records, password);
-          break;
-        }
-        case 4: {
-          for (const auto &record :
-               filterByCreator(records, currentUser->username)) {
-            updateLastRead(record.id, records);
-            cout << record.id << ": " << record.data
-                 << " (Created at: " << record.timestamp
-                 << ", Last modified: " << record.last_modified
-                 << ", Last read: ";
-            if (record.last_read.empty()) {
-              cout << "Never been read";
-            } else {
-              cout << record.last_read;
-            }
-            cout << ")" << endl;
-          }
-          break;
-        }
-        case 5: {
-          string keyword;
-          cout << "Enter keyword: ";
-          cin >> keyword;
-          for (const auto &record : filterByKeyword(
-                   filterByCreator(records, currentUser->username), keyword)) {
-            cout << record.id << ": " << record.data
-                 << " (Created at: " << record.timestamp << ")" << endl;
-          }
-          break;
-        }
-        case 6: {
-          string term;
-          cout << "Enter term: ";
-          cin >> term;
-          int totalFrequency = 0;
-          for (const auto &record :
-               filterByCreator(records, currentUser->username)) {
-            int frequency = countTermFrequency(record.data, term);
-            totalFrequency += frequency;
-            if (frequency > 0) {
-              cout << "Record ID " << record.id << ": " << frequency
-                   << " occurrences" << endl;
-            }
-          }
-          cout << "Total occurrences of term \"" << term
-               << "\": " << totalFrequency << endl;
-          break;
-        }
-        case 7: {
-          {
-            int sortChoice;
-            cout << "Sort Menu\n1. Sort Records (A-Z, Z-A)\n2. Sort Records by "
-                    "ID (Min to Max, Max to Min)\nEnter your choice: ";
-            cin >> sortChoice;
-
-            switch (sortChoice) {
-            case 1: {
-              int order;
-              cout << "Sort Records\n1. A-Z\n2. Z-A\nEnter your choice: ";
-              cin >> order;
-              sortRecords(records, order == 2);
-              cout << "Records sorted." << endl;
-              break;
-            }
-            case 2: {
-              int order;
-              cout << "Sort Records by ID\n1. Min to Max\n2. Max to Min\nEnter "
-                      "your choice: ";
-              cin >> order;
-              sortRecordsById(records, order == 2);
-              cout << "Records sorted by ID." << endl;
-              break;
-            }
-            default: {
-              cout << "Invalid choice!" << endl;
-              break;
-            }
-            }
+          switch (sortChoice) {
+          case 1: {
+            int order;
+            cout << "Sort Records\n1. A-Z\n2. Z-A\nEnter your choice: ";
+            cin >> order;
+            sortRecords(records, order == 2);
+            cout << "Records sorted." << endl;
             break;
           }
-        }
-        case 8: {
-          saveRecords(records);
-          break;
-        }
-        case 9: {
-          if (logout(currentUser)) {
-            break; // break out of the inner while-loop if logout was successful
+          case 2: {
+            int order;
+            cout << "Sort Records by ID\n1. Min to Max\n2. Max to Min\nEnter "
+                    "your choice: ";
+            cin >> order;
+            sortRecordsById(records, order == 2);
+            cout << "Records sorted by ID." << endl;
+            break;
           }
-        }
-        default: {
-          cout << "Invalid choice!" << endl;
+          default: {
+            cout << "Invalid choice!" << endl;
+            break;
+          }
+          }
           break;
         }
+      }
+      case 8: {
+        saveRecords(records);
+        break;
+      }
+      case 9: {
+        if (logout(currentUser)) {
+          break; // break out of the inner while-loop if logout was successful
         }
-        if (!currentUser) {
-          break; // break out of the inner while-loop if currentUser is nullptr
-        }
+      }
+      default: {
+        cout << "Invalid choice!" << endl;
+        break;
+      }
       }
       if (!currentUser) {
         break; // break out of the inner while-loop if currentUser is nullptr
       }
     }
-  }
+  } // end LOG IN while
 
   return 0;
 }
