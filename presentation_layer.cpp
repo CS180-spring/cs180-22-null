@@ -477,6 +477,7 @@ int main() {
       }
       case 8: {
         saveRecords(records);
+        cout << "Records successfully saved." << endl;
         break;
       }
       case 9: {
