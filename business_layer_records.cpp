@@ -34,6 +34,41 @@ string decryptRecord(const string &encrypted_password, const string &XOR_KEY) {
   return password;
 }
 
+vector<unsigned int> encryptTEA(const vector<unsigned int> &password, const vector<unsigned int> TEAKEY) {
+  unsigned int p0 = password[0], p1 = password[1], sum = 0;
+  unsigned int delta = 0x9e37779b9;
+  unsigned int k0 = TEAKEY[0], k1 = TEAKEY[1], k2 = TEAKEY[2], k3 = TEAKEY[3];
+  
+  for (int i = 0; i < 32; ++i) {
+    sum += delta;
+    p0 += ((p1 << 4) + k0) ^ (p1 + sum) ^ ((p1 >> 5) + k1);
+    p1 += ((p0 << 4) + k2) ^ (p0 + sum) ^ ((p0 >> 5) + k3);
+  }
+  
+  vector<unsigned int> encrypted_password{};
+  encrypted_password[0] = p0;
+  encrypted_password[1] = p1;
+  
+  return encrypted_password;
+}
+
+vector<unsigned int> decryptTEA(const vector<unsigned int> &encrypted_password, const vector<unsigned int> TEAKEY) {
+  unsigned int p0 = encrypted_password[0], p1 = encrypted_password[1], sum = 0xC6EF3720, i;
+  unsigned int delta = 0x9e3779b9;
+  unsigned int k0 = TEAKEY[0], k1 = TEAKEY[1], k2 = TEAKEY[2], k3 = TEAKEY[3];
+  for (i = 0; i < 32; i++) {
+    p1 -= ((p0 << 4) + k2) ^ (p0 + sum) ^ ((p0 >> 5) + k3);
+    p0 -= ((p1 << 4) + k0) ^ (p1 + sum) ^ (p1 + sum) ^ ((p1 >> 5) + k1);
+    sum -= delta;
+  }
+  
+  vector<unsigned int> password{};
+  password[0] = p0;
+  password[1] = p1;
+  
+  return password;
+}
+
 // Returns string signature by calculating hash.
 std::string generateSignature(const std::string &str) {
   std::hash<std::string> hasher;
