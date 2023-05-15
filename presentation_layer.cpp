@@ -86,13 +86,9 @@ int main() {
   Table *currentTable = nullptr;
   User *debug = nullptr; // Later on, convert this into Table ptr
   bool tableFlag = false;
-	bool userAgreement = true; // Enter first loop
+  bool userAgreement = getUserAgreement();
 
   while (!currentUser && userAgreement) {
-    bool userAgreement = getUserAgreement();
-    if (userAgreement == false) {
-      break;
-    }
     int choice;
     cout << "╔══════════════════════════════════════════════╗" << endl;
     cout << "║                                              ║" << endl;
