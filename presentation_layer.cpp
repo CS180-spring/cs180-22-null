@@ -152,8 +152,11 @@ int main() {
       int choice;
       cout << "╔══════════════════════════════════════════════╗" << endl;
       cout << "║                                              ║" << endl;
-      cout << "║                  Table  Menu                 ║" << endl;
+      cout << "║                  Main Menu                   ║" << endl;
       cout << "║                                              ║" << endl;
+      cout << "╠══════════════════════════════════════════════╣" << endl;
+      cout << "║ Welcome, " << currentUser->username
+           << setw(39 - currentUser->username.length()) << "║" << endl;
       cout << "╠══════════════════════════════════════════════╣" << endl;
       cout << "║ 1. Create a table                            ║" << endl;
       cout << "║ 2. View all tables                           ║" << endl;
@@ -214,11 +217,8 @@ int main() {
       int choice;
       cout << "╔══════════════════════════════════════════════╗" << endl;
       cout << "║                                              ║" << endl;
-      cout << "║        Welcome to the NullDB!                ║" << endl;
+      cout << "║                 Table Menu                   ║" << endl;
       cout << "║                                              ║" << endl;
-      cout << "╠══════════════════════════════════════════════╣" << endl;
-      cout << "║ Welcome, " << currentUser->username
-           << setw(39 - currentUser->username.length()) << "║" << endl;
       cout << "╠══════════════════════════════════════════════╣" << endl;
       cout << "║ 0. Display by ID                             ║" << endl;
       cout << "║ 1. Insert                                    ║" << endl;
