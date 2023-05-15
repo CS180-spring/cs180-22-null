@@ -71,6 +71,72 @@ void deleteTable(vector<Record> &records) {
   cout << "Deleting table..." << endl;
 }
 
+void mainMenu(User *currentUser, bool tableFlag, vector<Table> tables,
+              Table *currentTable, User *debug) {
+  int choice;
+  cout << "╔══════════════════════════════════════════════╗" << endl;
+  cout << "║                                              ║" << endl;
+  cout << "║                  Main Menu                   ║" << endl;
+  cout << "║                                              ║" << endl;
+  cout << "╠══════════════════════════════════════════════╣" << endl;
+  cout << "║ Welcome, " << currentUser->username
+       << setw(39 - currentUser->username.length()) << "║" << endl;
+  cout << "╠══════════════════════════════════════════════╣" << endl;
+  cout << "║ 1. Create a table                            ║" << endl;
+  cout << "║ 2. View all tables                           ║" << endl;
+  cout << "║ 3. Go into a table                           ║" << endl;
+  cout << "║ 4. Delete a table                            ║" << endl;
+  cout << "║ 5. Exit                                      ║" << endl;
+  cout << "║ 6. Debug                                     ║" << endl;
+  cout << "║                                              ║" << endl;
+  cout << "║ Choose an option:                            ║" << endl;
+  cout << "╚══════════════════════════════════════════════╝" << endl;
+  cin >> choice;
+
+  switch (choice) {
+  case 1: {
+    string name = "";
+    cin.ignore();
+    cout << "Enter a name for your table: ";
+    getline(cin, name);
+    int tableID = createNewTable(currentUser->username, name, tables);
+    cout << "Created new table with id: " << tableID << endl;
+    tableFlag = false;
+    break;
+  } // end case 1
+  case 2:
+    printTables(currentUser);
+    break;
+  case 3: {
+    int tableID = 0;
+    cout << "Enter the ID of table to go into: " << endl;
+    cin >> tableID;
+    cin.ignore();
+    currentTable = loadExistingTable(tableID, tables);
+    if (!currentTable) {
+      cerr << "Oops! That table doesn't exist. Try again!" << endl;
+    } else {
+      cout << "Loading " << currentTable->name << "..." << endl;
+    }
+    tableFlag = false;
+    break;
+  }
+  case 4:
+    cout << "Option 4: Delete a table." << endl;
+    tableFlag = false;
+    break;
+  case 5:
+    cout << "Exiting NullDB. Goodbye!" << endl;
+    return;
+  case 6:
+    debug = currentUser;
+    tableFlag = false;
+    break;
+  default:
+    cout << "Invalid choice! Please try again." << endl;
+  }
+} // end TABLE while
+
 int main() {
   vector<Table> tables = loadTables();
   vector<Record> records = loadRecords();
@@ -149,69 +215,69 @@ int main() {
     }
 
     while (currentUser && tableFlag) {
-      int choice;
-      cout << "╔══════════════════════════════════════════════╗" << endl;
-      cout << "║                                              ║" << endl;
-      cout << "║                  Main Menu                   ║" << endl;
-      cout << "║                                              ║" << endl;
-      cout << "╠══════════════════════════════════════════════╣" << endl;
-      cout << "║ Welcome, " << currentUser->username
-           << setw(39 - currentUser->username.length()) << "║" << endl;
-      cout << "╠══════════════════════════════════════════════╣" << endl;
-      cout << "║ 1. Create a table                            ║" << endl;
-      cout << "║ 2. View all tables                           ║" << endl;
-      cout << "║ 3. Go into a table                           ║" << endl;
-      cout << "║ 4. Delete a table                            ║" << endl;
-      cout << "║ 5. Exit                                      ║" << endl;
-      cout << "║ 6. Debug                                     ║" << endl;
-      cout << "║                                              ║" << endl;
-      cout << "║ Choose an option:                            ║" << endl;
-      cout << "╚══════════════════════════════════════════════╝" << endl;
-      cin >> choice;
+//       int choice;
+//       cout << "╔══════════════════════════════════════════════╗" << endl;
+//       cout << "║                                              ║" << endl;
+//       cout << "║                  Main Menu                   ║" << endl;
+//       cout << "║                                              ║" << endl;
+//       cout << "╠══════════════════════════════════════════════╣" << endl;
+//       cout << "║ Welcome, " << currentUser->username
+//            << setw(39 - currentUser->username.length()) << "║" << endl;
+//       cout << "╠══════════════════════════════════════════════╣" << endl;
+//       cout << "║ 1. Create a table                            ║" << endl;
+//       cout << "║ 2. View all tables                           ║" << endl;
+//       cout << "║ 3. Go into a table                           ║" << endl;
+//       cout << "║ 4. Delete a table                            ║" << endl;
+//       cout << "║ 5. Exit                                      ║" << endl;
+//       cout << "║ 6. Debug                                     ║" << endl;
+//       cout << "║                                              ║" << endl;
+//       cout << "║ Choose an option:                            ║" << endl;
+//       cout << "╚══════════════════════════════════════════════╝" << endl;
+//       cin >> choice;
 
-      switch (choice) {
-      case 1: {
-        string name = "";
-        cin.ignore();
-        cout << "Enter a name for your table: ";
-        getline(cin, name);
-        int tableID = createNewTable(currentUser->username, name, tables);
-        cout << "Created new table with id: " << tableID << endl;
-        tableFlag = false;
-        break;
-      } // end case 1
-      case 2:
-        printTables(currentUser);
-        break;
-      case 3: {
-        int tableID = 0;
-        cout << "Enter the ID of table to go into: " << endl;
-        cin >> tableID;
-        cin.ignore();
-        currentTable = loadExistingTable(tableID, tables);
-        if (!currentTable) {
-          cerr << "Oops! That table doesn't exist. Try again!" << endl;
-        } else {
-          cout << "Loading " << currentTable->name << "..." << endl;
-        }
-        tableFlag = false;
-        break;
-      }
-      case 4:
-        cout << "Option 4: Delete a table." << endl;
-        tableFlag = false;
-        break;
-      case 5:
-        cout << "Exiting NullDB. Goodbye!" << endl;
-        return 0;
-      case 6:
-        debug = currentUser;
-        tableFlag = false;
-        break;
-      default:
-        cout << "Invalid choice! Please try again." << endl;
-      }
-    } // end TABLE while
+//       switch (choice) {
+//       case 1: {
+//         string name = "";
+//         cin.ignore();
+//         cout << "Enter a name for your table: ";
+//         getline(cin, name);
+//         int tableID = createNewTable(currentUser->username, name, tables);
+//         cout << "Created new table with id: " << tableID << endl;
+//         tableFlag = false;
+//         break;
+//       } // end case 1
+//       case 2:
+//         printTables(currentUser);
+//         break;
+//       case 3: {
+//         int tableID = 0;
+//         cout << "Enter the ID of table to go into: " << endl;
+//         cin >> tableID;
+//         cin.ignore();
+//         currentTable = loadExistingTable(tableID, tables);
+//         if (!currentTable) {
+//           cerr << "Oops! That table doesn't exist. Try again!" << endl;
+//         } else {
+//           cout << "Loading " << currentTable->name << "..." << endl;
+//         }
+//         tableFlag = false;
+//         break;
+//       }
+//       case 4:
+//         cout << "Option 4: Delete a table." << endl;
+//         tableFlag = false;
+//         break;
+//       case 5:
+//         cout << "Exiting NullDB. Goodbye!" << endl;
+//         return 0;
+//       case 6:
+//         debug = currentUser;
+//         tableFlag = false;
+//         break;
+//       default:
+//         cout << "Invalid choice! Please try again." << endl;
+//       }
+//    } // end TABLE while
 
     while (true && currentUser) {
       int choice;
@@ -430,4 +496,5 @@ int main() {
   } // end LOG IN while
 
   return 0;
+}
 }
