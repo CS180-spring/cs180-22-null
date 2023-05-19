@@ -1,6 +1,6 @@
 #include "data_layer_records.h"
 //kl
-//#include "business_layer_records.h"
+//#include "business_layer_records.h" // added kl
 #include "json.hpp"
 #include <algorithm>
 #include <bitset>
@@ -64,8 +64,8 @@ cout << "This is saveRecords, before" << endl;
                      {"encryptionType", record.encryptionType},
                      {"signature", record.signature}};
                       // KL, 05/19
-                      cout << "This is saveRecords, during" << endl;
-                      cout << "tableName: " << record.tableName << endl << endl;
+                      cout << "This is saveRecords, during" << endl; // added kl
+                      cout << "tableName: " << record.tableName << endl << endl; // added kl
     j_records.push_back(j_record);
   }
 
