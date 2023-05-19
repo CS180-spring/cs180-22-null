@@ -1,4 +1,6 @@
 #include "data_layer_records.h"
+//kl
+//#include "business_layer_records.h" // added kl
 #include "json.hpp"
 #include <algorithm>
 #include <bitset>
@@ -46,7 +48,10 @@ vector<Record> loadRecords() {
 
 void saveRecords(const vector<Record> &records) {
   json j_records = json::array();
-
+  // KL, 05/19
+cout << "This is saveRecords, before" << endl;
+  
+  
   for (const Record &record : records) {
     json j_record = {{"id", record.id},
                      {"tableID", record.tableID},
@@ -58,6 +63,9 @@ void saveRecords(const vector<Record> &records) {
                      {"last_read", record.last_read},
                      {"encryptionType", record.encryptionType},
                      {"signature", record.signature}};
+                      // KL, 05/19
+                      cout << "This is saveRecords, during" << endl; // added kl
+                      cout << "tableName: " << record.tableName << endl << endl; // added kl
     j_records.push_back(j_record);
   }
 
