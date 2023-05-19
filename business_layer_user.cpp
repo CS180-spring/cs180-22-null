@@ -34,7 +34,7 @@ User *createUser(const string &username, const string &password, bool isManager,
       return nullptr;
     }
   }
-  User newUser{getNextID(), username, password, isManager};
+  User newUser{getNextID(users), username, password, isManager};
   users.push_back(newUser);
   return &users.back();
 }
@@ -65,7 +65,12 @@ bool logout(User *&currentUser) {
   return true;
 }
 
-int getNextID() {
-  static int currentID = 0;
-  return ++currentID;
+int getNextID(const vector<User> &userlist) {
+  int maxId = 0;
+  for (const auto &user : userlist) {
+    if (user.id > maxId) {
+      maxId = user.id;
+    }
+  }
+  return maxId + 1;
 }
