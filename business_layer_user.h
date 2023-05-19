@@ -17,6 +17,5 @@ User *createUser(const std::string &username, const std::string &password,
                  bool isManager, std::vector<User> &users);
 bool isManager(const std::string &username, const std::vector<User> &users);
 bool logout(User *&currentUser);
-int getNextID();
-
+int getNextID(const std::vector<User> &userlist);
 #endif // BUSINESS_LAYER_USER_H
