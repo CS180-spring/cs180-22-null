@@ -9,6 +9,9 @@ int createNewTable(const string &creator, string &tableName, vector<Table> &tabl
   newTable.id = getNextID(tables);
   newTable.owner = creator;
   newTable.name = tableName;
+  //KL 05/19
+  cout << "this is createNewTable" << endl;
+  cout << "tableName: " << tableName << endl << endl;
 
   tables.push_back(newTable);
   return newTable.id;
