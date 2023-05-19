@@ -1,8 +1,8 @@
-# Project-CS180-NULL 
+# Project-CS180-NULL
+
 Please read and agree to our user agreement at the end of this document BEFORE using the software.
 
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-718a45dd9cf7e7f842a935f5ebbe5719a5e09af4491e668f4dbf3b35d5cca122.svg)](https://classroom.github.com/online_ide?assignment_repo_id=10849768&assignment_repo_type=AssignmentRepo)
-
 
 Team Members (A-Z):
 - Chun Ho Wong
@@ -10,9 +10,6 @@ Team Members (A-Z):
 - Henry Pham
 - Irene Wu
 - Kevin Lin
-
-
-
 
 ## Interface Documentation
 
@@ -40,7 +37,10 @@ A text-based database program built with C++. Features include:
 - Root manager account for creating new user accounts.
 - Basic filtering and keyword search for records.
 - Data persistence through storing records in a text file.
-- Future enhancements include encryption and web frontend support.
+- Exporting tables and records to JSON files.
+- User ID generation for unique identification.
+- Inviting users to collaborate on tables.
+- Enhanced table details display.
 
 ### Getting Started
 Compile and run main.cpp. Use the menu to perform actions on records.
@@ -52,7 +52,19 @@ Log in with username and password. Root manager can create new users. Users can 
 Filter records by creator or keyword.
 
 ### Data Persistence
-Records are stored in a JSON file for easy data persistence.
+Records and tables are stored in JSON files for easy data persistence.
+
+### Exporting Files
+Users can export tables and records to JSON files for external use.
+
+### User ID Generation
+Each user is assigned a unique ID for identification purposes.
+
+### Collaborating on Tables
+Users can invite other users to collaborate on tables by adding them as authorized collaborators.
+
+### Enhanced Table Details Display
+The table details display has been improved to align columns properly and show the owner of the table.
 
 ### Future Enhancements
 Future enhancements include adding encryption for enhanced data security and adding a web frontend for easier user access.
