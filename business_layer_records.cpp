@@ -48,7 +48,7 @@ vector<unsigned int> encryptTEA(const vector<unsigned int> &password,
     p1 += ((p0 << 4) + k2) ^ (p0 + sum) ^ ((p0 >> 5) + k3);
   }
 
-  vector<unsigned int> encrypted_password{};
+  vector<unsigned int> encrypted_password(2);
   encrypted_password[0] = p0;
   encrypted_password[1] = p1;
 
@@ -67,7 +67,7 @@ vector<unsigned int> decryptTEA(const vector<unsigned int> &encrypted_password,
     sum -= delta;
   }
 
-  vector<unsigned int> password{};
+  vector<unsigned int> password(2);
   password[0] = p0;
   password[1] = p1;
 
@@ -94,9 +94,11 @@ string getDecryptKey() { // Helper
   Return: the id of the record
 */
 int insert(const string &data, const string &createdBy, vector<Record> &records,
-           const int encryption, const string &cryptKey) {
+           const int encryption, const string &cryptKey, const int tableID,
+           const string &TableName) {
   Record newRecord;
   newRecord.id = getNextId(records);
+  // kevin is working on this
   newRecord.data = data;
   newRecord.creator = createdBy;
   newRecord.timestamp = currentDateTime();
@@ -104,10 +106,16 @@ int insert(const string &data, const string &createdBy, vector<Record> &records,
   newRecord.last_read = "";
   newRecord.encryptionType = "NONE";
   newRecord.signature =
-      generateSignature(data); // This would keep the unencrypted signature
+      generateSignature(data);     // This would keep the unencrypted signature
+  newRecord.tableID = tableID;     // CW
+  newRecord.tableName = TableName; // CW
   if (encryption == 1) {
     newRecord.data = encryptXOR(newRecord.data, cryptKey);
     newRecord.encryptionType = "XOR";
+  }
+  if (encryption == 2) {
+    newRecord.data = encryptXOR(newRecord.data, cryptKey);
+    newRecord.encryptionType = "TEA";
   }
   /*// KL, 05/11/2023
   if (encryption == 2) {
@@ -204,6 +212,19 @@ vector<Record> filterByCreator(const vector<Record> &records,
 }
 
 /*
+NEW FUNCTION
+*/
+vector<Record> filterByTableID(const vector<Record> &records, int tableID) {
+  vector<Record> filteredRecords;
+  for (const auto &record : records) {
+    if (record.tableID == tableID) {
+      filteredRecords.push_back(record);
+    }
+  }
+  return filteredRecords;
+}
+
+/*
   Function: countTermFrequency
   Desc: counts the frequency of a specific term in the data
   Parameters: the data of the record and the term to search
@@ -264,11 +285,21 @@ bool compareByData(const Record &a, const Record &b) { return a.data < b.data; }
 bool compareById(const Record &a, const Record &b) { return a.id < b.id; }
 
 void sortRecords(vector<Record> &records, bool reverse) {
+  vector<Record> filteredRecords;
+
+  // Filter the records
+  copy_if(records.begin(), records.end(), back_inserter(filteredRecords),
+          [](Record const &record) { return record.encryptionType == "NONE"; });
+
+  // Sort the filtered records
   if (reverse) {
-    sort(records.rbegin(), records.rend(), compareByData);
+    sort(filteredRecords.rbegin(), filteredRecords.rend(), compareByData);
   } else {
-    sort(records.begin(), records.end(), compareByData);
+    sort(filteredRecords.begin(), filteredRecords.end(), compareByData);
   }
+
+  // Copy back sorted records to the original vector
+  records = filteredRecords;
 }
 
 void sortRecordsById(vector<Record> &records, bool reverse) {

@@ -29,9 +29,11 @@ decryptTEA(const std::vector<unsigned int> &encrypted_password,
 
 int getNextId(const std::vector<Record> &records);
 std::string currentDateTime();
+
 int insert(const std::string &data, const std::string &createdBy,
            std::vector<Record> &records, const int encryption,
-           const std::string &cryptKey);
+           const std::string &cryptKey, const int tableID,
+           const std::string &TableName);
 
 void deleteRecord(int id, std::vector<Record> &records,
                   const std::string &password);
@@ -42,6 +44,8 @@ std::vector<Record> filterByKeyword(const std::vector<Record> &records,
                                     const std::string &keyword);
 std::vector<Record> filterByCreator(const std::vector<Record> &records,
                                     const std::string &createdBy);
+std::vector<Record> filterByTableID(const std::vector<Record> &records,
+                                    int tableID); // NEWLY ADDED
 int countTermFrequency(const std::string &data, const std::string &term);
 
 void updateLastRead(int id, std::vector<Record> &records);
