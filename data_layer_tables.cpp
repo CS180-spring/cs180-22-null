@@ -28,6 +28,9 @@ vector<Table> loadTables() {
       table.id = j_table["id"];
       table.owner = j_table["owner"];
       table.name = j_table["name"];
+      // KL, 05/19
+      cout << "This is LoadTables" << endl;
+  cout << "tableName: " << table.name << endl << endl;
     }
     ifs.close();
   }
