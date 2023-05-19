@@ -1,4 +1,6 @@
 #include "data_layer_encryption.h"
+#include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -63,4 +65,34 @@ string decryptString(const string &str) {
   for_each(decrypted.begin(), decrypted.end(),
            [](char &c) { c = c - 8; }); // Caesar Cipher
   return base64_decode(decrypted);
+}
+
+// NEW PACTCHES 6.0
+const std::string KEY = "LUCKYNUMBEREIGHT";
+
+char shiftChar(char c, int shift) {
+  if (isupper(c))
+    return (c - 'A' + shift + 26) % 26 + 'A';
+  else if (islower(c))
+    return (c - 'a' + shift + 26) % 26 + 'a';
+  else
+    return c;
+}
+
+string encryptStringVigenere(const string &str) {
+  string encrypted = str;
+  for (size_t i = 0; i < str.size(); ++i) {
+    int shift = KEY[i % KEY.size()] - 'A';
+    encrypted[i] = shiftChar(str[i], shift);
+  }
+  return encrypted;
+}
+
+string decryptStringVigenere(const string &str) {
+  string decrypted = str;
+  for (size_t i = 0; i < str.size(); ++i) {
+    int shift = 'A' - KEY[i % KEY.size()];
+    decrypted[i] = shiftChar(str[i], shift);
+  }
+  return decrypted;
 }

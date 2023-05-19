@@ -5,6 +5,7 @@
 #include <vector>
 
 struct User {
+  int id;
   std::string username;
   std::string password;
   bool isManager;
@@ -16,5 +17,6 @@ User *createUser(const std::string &username, const std::string &password,
                  bool isManager, std::vector<User> &users);
 bool isManager(const std::string &username, const std::vector<User> &users);
 bool logout(User *&currentUser);
+int getNextID();
 
 #endif // BUSINESS_LAYER_USER_H

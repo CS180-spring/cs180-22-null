@@ -34,7 +34,7 @@ User *createUser(const string &username, const string &password, bool isManager,
       return nullptr;
     }
   }
-  User newUser{username, password, isManager};
+  User newUser{getNextID(), username, password, isManager};
   users.push_back(newUser);
   return &users.back();
 }
@@ -63,4 +63,9 @@ bool isManager(const string &username, const vector<User> &users) {
 bool logout(User *&currentUser) {
   currentUser = nullptr;
   return true;
+}
+
+int getNextID() {
+  static int currentID = 0;
+  return ++currentID;
 }

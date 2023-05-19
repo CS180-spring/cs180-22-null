@@ -28,13 +28,29 @@ vector<Table> loadTables() {
       table.id = j_table["id"];
       table.owner = j_table["owner"];
       table.name = j_table["name"];
-      // KL, 05/19
-      cout << "This is LoadTables" << endl; // added kl
-  cout << "tableName: " << table.name << endl << endl; // added kl
+      table.authorizedCollaborators =
+          j_table["authorizedCollaborators"].get<std::vector<int>>();
+      tables.push_back(table);
     }
     ifs.close();
   }
   return tables;
+}
+
+void saveTables(const vector<Table> &tables) {
+  json j_tables = json::array();
+
+  for (const Table &table : tables) {
+    json j_table = {{"id", table.id},
+                    {"owner", table.owner},
+                    {"name", table.name},
+                    {"authorizedCollaborators", table.authorizedCollaborators}};
+    j_tables.push_back(j_table);
+  }
+
+  ofstream ofs("tables.json");
+  ofs << j_tables.dump(4) << endl;
+  ofs.close();
 }
 
 int getNextID(const vector<Table> &tables) {
@@ -44,5 +60,5 @@ int getNextID(const vector<Table> &tables) {
       maxId = table.id;
     }
   }
-    return maxId + 1;
+  return maxId + 1;
 }

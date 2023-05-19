@@ -1,6 +1,4 @@
 #include "data_layer_records.h"
-//kl
-//#include "business_layer_records.h" // added kl
 #include "json.hpp"
 #include <algorithm>
 #include <bitset>
@@ -48,10 +46,7 @@ vector<Record> loadRecords() {
 
 void saveRecords(const vector<Record> &records) {
   json j_records = json::array();
-  // KL, 05/19
-cout << "This is saveRecords, before" << endl;
-  
-  
+
   for (const Record &record : records) {
     json j_record = {{"id", record.id},
                      {"tableID", record.tableID},
@@ -63,9 +58,6 @@ cout << "This is saveRecords, before" << endl;
                      {"last_read", record.last_read},
                      {"encryptionType", record.encryptionType},
                      {"signature", record.signature}};
-                      // KL, 05/19
-                      cout << "This is saveRecords, during" << endl; // added kl
-                      cout << "tableName: " << record.tableName << endl << endl; // added kl
     j_records.push_back(j_record);
   }
 
@@ -73,13 +65,6 @@ cout << "This is saveRecords, before" << endl;
   ofs << j_records.dump(4) << endl;
   ofs.close();
 }
-
-// New Patches
-
-
-
-
-// New Patches End
 
 int getNextId(const vector<Record> &records) {
   int maxId = 0;
@@ -97,4 +82,42 @@ string currentDateTime() {
   char buffer[80];
   strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtm);
   return string(buffer);
+}
+
+// EXPORT FUNCTION (The only way user download their data back, currently only
+// table wise)
+void outputTableToJson(const vector<Record> &records, const string &tableName,
+                       const User &currentUser, int tableID) {
+  vector<Record> tableRecords = filterByTableID(records, tableID);
+
+  if (tableRecords.empty()) {
+    cout << "No records found for table with ID: " << tableID << endl;
+    return;
+  }
+
+  if (tableRecords[0].creator != currentUser.username &&
+      !currentUser.isManager) {
+    cout << "You do not have the rights to export this table." << endl;
+    return;
+  }
+
+  json j_records = json::array();
+
+  for (const Record &record : tableRecords) {
+    json j_record = {{"id", record.id},
+                     {"tableID", record.tableID},
+                     {"tableName", record.tableName},
+                     {"data", record.data},
+                     {"creator", record.creator},
+                     {"timestamp", record.timestamp},
+                     {"last_modified", record.last_modified},
+                     {"last_read", record.last_read},
+                     {"encryptionType", record.encryptionType},
+                     {"signature", record.signature}};
+    j_records.push_back(j_record);
+  }
+
+  ofstream ofs(tableName + ".json");
+  ofs << j_records.dump(4) << endl;
+  ofs.close();
 }
