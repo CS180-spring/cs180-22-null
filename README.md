@@ -1,5 +1,19 @@
 # Project-CS180-NULL
 
+<code><img height="20" src="https://shields.io/badge/NullDB-%E2%9C%A8-239DFF?style=flat-square" alt="NullDB"></code>
+<code><img height="20" src="https://shields.io/badge/style-Powered%20by%20C%2B%2B-green?logo=C%2B%2B&style=flat-square&label=" alt="Powered by C++" title="Powered by C++"></code>
+<code><img height="20" src="https://shields.io/badge/Library-C%2B%2B-00599C?style=flat-square" alt="C++"></code>
+<code><img height="20" src="https://shields.io/badge/Library-STL-ff69b4?style=flat-square" alt="STL"></code>
+<code><img height="20" src="https://shields.io/badge/Library-Algorithm-00cc99?style=flat-square" alt="Algorithm"></code>
+<code><img height="20" src="https://shields.io/badge/Library-fstream-ffcc00?style=flat-square" alt="fstream"></code>
+<code><img height="20" src="https://shields.io/badge/Library-iostream-ff6600?style=flat-square" alt="iostream"></code>
+<code><img height="20" src="https://shields.io/badge/Library-string-cc66ff?style=flat-square" alt="string"></code>
+<code><img height="20" src="https://shields.io/badge/Library-vector-9933cc?style=flat-square" alt="vector"></code>
+
+
+
+
+
 Please read and agree to our user agreement at the end of this document BEFORE using the software.
 
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-718a45dd9cf7e7f842a935f5ebbe5719a5e09af4491e668f4dbf3b35d5cca122.svg)](https://classroom.github.com/online_ide?assignment_repo_id=10849768&assignment_repo_type=AssignmentRepo)
