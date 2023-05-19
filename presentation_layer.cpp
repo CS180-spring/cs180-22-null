@@ -106,6 +106,7 @@ void mainMenu(User *currentUser, bool tableFlag, vector<Table> tables,
   } // end case 1
   case 2:
     printTables(currentUser);
+    mainMenu(currentUser, tableFlag, tables, currentTable, debug);
     break;
   case 3: {
     int tableID = 0;
@@ -124,6 +125,7 @@ void mainMenu(User *currentUser, bool tableFlag, vector<Table> tables,
   case 4:
     cout << "Option 4: Delete a table." << endl;
     tableFlag = false;
+    mainMenu(currentUser, tableFlag, tables, currentTable, debug);
     break;
   case 5:
     cout << "Exiting NullDB. Goodbye!" << endl;
