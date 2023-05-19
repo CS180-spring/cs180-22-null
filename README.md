@@ -2,7 +2,6 @@
 
 <code><img height="20" src="https://shields.io/badge/NullDB-%E2%9C%A8-239DFF?style=flat-square" alt="NullDB"></code>
 <code><img height="20" src="https://shields.io/badge/style-Powered%20by%20C%2B%2B-green?logo=C%2B%2B&style=flat-square&label=" alt="Powered by C++" title="Powered by C++"></code>
-<code><img height="20" src="https://shields.io/badge/Library-C%2B%2B-00599C?style=flat-square" alt="C++"></code>
 <code><img height="20" src="https://shields.io/badge/Library-STL-ff69b4?style=flat-square" alt="STL"></code>
 <code><img height="20" src="https://shields.io/badge/Library-Algorithm-00cc99?style=flat-square" alt="Algorithm"></code>
 <code><img height="20" src="https://shields.io/badge/Library-fstream-ffcc00?style=flat-square" alt="fstream"></code>
