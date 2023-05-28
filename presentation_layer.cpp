@@ -55,7 +55,8 @@ string getPassword() {
   return password;
 }
 
-void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users) {
+void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
+               bool &programTerminated) {
   int choice;
   cout << "╔══════════════════════════════════════════════╗" << endl;
   cout << "║                                              ║" << endl;
@@ -68,14 +69,16 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users) {
   cout << "║                                              ║" << endl;
   cout << "╚══════════════════════════════════════════════╝" << endl;
   cin >> choice;
-
+  
   string username, password;
-  cout << "Enter username: ";
-  cin >> username;
-  cout << "Enter password: ";
-  cin.ignore();
-  password = getPassword();
-  Universal_password = password;
+  if (choice != 3) {
+    cout << "Enter username: ";
+    cin >> username;
+    cout << "Enter password: ";
+    cin.ignore();
+    password = getPassword();
+    Universal_password = password;
+  }
 
   switch (choice) {
   case 1: {
@@ -120,10 +123,10 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users) {
   }
   case 3: {
     cout << "Exiting NullDB. Goodbye!" << endl;
-    if (logout(currentUser)) {
-      break;
-    }
-    return;
+    programTerminated = true;
+    currentUser = nullptr;  // Reset currentUser
+    tableMenuFlag = false;  // Reset tableMenuFlag
+    break;
   }
   default: {
     cout << "Invalid choice! Please try again." << endl;
@@ -226,7 +229,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     break;
   }
   case 6:
-    cout << "Exiting NullDB. Goodbye!" << endl;
+    cout << "Exiting to record menu." << endl;
     tableMenuFlag = false;
     if (logout(currentUser)) {
       break; // break out of the inner while-loop if logout was successful
@@ -237,7 +240,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
   }
 } // end TABLE
 
-void recordMenu(User *currentUser, bool tableMenuFlag, vector<Table> &tables,
+void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
                 Table *currentTable, vector<Record> &records,
                 vector<User> &users) {
   int choice;
@@ -447,7 +450,8 @@ void recordMenu(User *currentUser, bool tableMenuFlag, vector<Table> &tables,
   case 10: {
     saveRecords(records);
     tableMenuFlag = false;
-    string tempUser = currentUser->username; // Saves current user name for exit message
+    string tempUser =
+        currentUser->username; // Saves current user name for exit message
     if (logout(currentUser)) {
       currentUser = nullptr; // Set currentUser to nullptr to indicate logout
       cout << "Goodbye, " << tempUser << endl;
@@ -478,17 +482,17 @@ int main() {
   User *currentUser = nullptr;
   Table *currentTable = nullptr;
   bool tableMenuFlag = false;
+  bool programTerminated = false;
   bool userAgreement = getUserAgreement();
 
-  while (userAgreement) {
-    while (!currentUser) {
-      loginMenu(currentUser, tableMenuFlag, users);
+  while (userAgreement && !programTerminated) {
+    while (!currentUser && !programTerminated) {
+      loginMenu(currentUser, tableMenuFlag, users, programTerminated);
     }
-
     while (currentUser) {
       tableMenu(currentUser, tableMenuFlag, tables, currentTable, users);
 
-      while (!tableMenuFlag) {
+      while (!tableMenuFlag && currentUser) {
         recordMenu(currentUser, tableMenuFlag, tables, currentTable, records,
                    users);
       }
