@@ -16,9 +16,14 @@ int createNewTable(const std::string &creator, std::string &tableName,
 
 Table *loadExistingTable(const int &tableID, std::vector<Table> &tables);
 
-void printTableDetails(const std::vector<Table> &tables);
-// void displayAllTables(const std::vector<Record> &records); // No need this
-// atm?
+void addCollaborator(const int &tableID, const int &userID,
+                     std::vector<Table> &tables);
+
+std::string getUsernameFromId(const int &userId,
+                              const std::vector<User> &users);
+
+void printTableDetails(const std::vector<Table> &tables, const std::vector<User> &users);
+
 
 void deleteTable(std::vector<Record> &records); // Update later
 
