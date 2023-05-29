@@ -306,3 +306,48 @@ void sortRecordsById(vector<Record> &records, bool reverse) {
 }
 
 // New patches End
+
+/*
+flag: Controls the operation of the function. If it is 1, the function will just
+delete the records. If it is 2, the function will delete the records and also
+output all the records that have encryptionType = "NONE".
+*/
+std::pair<int, int> deleteTableRecords(const std::string &tableName,
+                                       const int tableID,
+                                       std::vector<Record> &records,
+                                       const int flag) {
+  int deletedRecords = 0;
+  int deletedEncryptedRecords = 0;
+
+  records.erase(
+      remove_if(records.begin(), records.end(),
+                [&](Record &record) {
+                  if (record.tableID == tableID &&
+                      record.tableName == tableName) {
+                    if (record.encryptionType != "NONE") {
+                      deletedEncryptedRecords++;
+                    }
+
+                    // If flag is 2, and record is not encrypted, output the
+                    // record
+                    if (flag == 2 && record.encryptionType == "NONE") {
+                      cout << "ID: " << record.id << "\n";
+                      cout << "Data: " << record.data << "\n";
+                      cout << "Creator: " << record.creator << "\n";
+                      cout << "=====================================\n";
+                    }
+
+                    deletedRecords++;
+                    return true;
+                  }
+                  return false;
+                }),
+      records.end());
+
+  if (flag == 2 && deletedEncryptedRecords > 0) {
+    cout << deletedEncryptedRecords
+         << " encrypted records have been deleted but not shown.\n";
+  }
+
+  return make_pair(deletedRecords, deletedEncryptedRecords);
+}

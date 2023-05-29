@@ -69,7 +69,7 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
   cout << "║                                              ║" << endl;
   cout << "╚══════════════════════════════════════════════╝" << endl;
   cin >> choice;
-  
+
   string username, password;
   if (choice != 3) {
     cout << "Enter username: ";
@@ -124,8 +124,8 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
   case 3: {
     cout << "Exiting NullDB. Goodbye!" << endl;
     programTerminated = true;
-    currentUser = nullptr;  // Reset currentUser
-    tableMenuFlag = false;  // Reset tableMenuFlag
+    currentUser = nullptr; // Reset currentUser
+    tableMenuFlag = false; // Reset tableMenuFlag
     break;
   }
   default: {
@@ -137,7 +137,8 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
 }
 
 void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
-               Table *currentTable, vector<User> &users) {
+               Table *currentTable, vector<Record> &records,
+               vector<User> &users) {
   int choice;
   cout << "╔══════════════════════════════════════════════╗" << endl;
   cout << "║                                              ║" << endl;
@@ -150,7 +151,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
   cout << "║ 1. Create a table                            ║" << endl;
   cout << "║ 2. View all tables                           ║" << endl;
   cout << "║ 3. Enter a table                             ║" << endl;
-  cout << "║ 4. Delete a table                            ║" << endl;
+  cout << "║ 4. Delete a table (with optional JSON export)║" << endl;
   cout << "║ 5. Add a collaborator to a table             ║" << endl;
   cout << "║ 6. Exit                                      ║" << endl;
   cout << "║                                              ║" << endl;
@@ -174,7 +175,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
   } // end case 1
   case 2:
     // Load tables before printing
-    tables = loadTables();
+    // tables = loadTables();
     // printTables(currentUser);
     printTableDetails(tables, users);
     tableMenuFlag = true;
@@ -186,7 +187,8 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     cin.ignore();
     currentTable = loadExistingTable(tableID, tables);
     if (!currentTable) {
-      cerr << "Oops! That table doesn't exist. Try again!" << endl;
+      cerr << "Table doesn't exist. Please try again." << endl;
+      tableMenuFlag = false;
     } else {
       // Check if the current user is the owner or an authorized collaborator
       if (currentTable->owner == currentUser->username ||
@@ -204,14 +206,87 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     tableMenuFlag = false;
     break;
   }
-  case 4:
+  case 4: {
     // Load tables before deletion
-    tables = loadTables();
-    // TODO: Implement delete function
-    // After deletion, save tables
+    // tables = loadTables();
+    int tableID = 0;
+    cout << "Enter the ID of the table to delete: ";
+    cin >> tableID;
+    cin.ignore();
+
+    // Find the table
+    currentTable = loadExistingTable(tableID, tables);
+
+    // Check if the table exists and the current user is the owner or an
+    // authorized collaborator
+    if (!currentTable) {
+      cerr << "Table doesn't exist. Please try again." << endl;
+    } else if (currentTable->owner == currentUser->username ||
+               find(currentTable->authorizedCollaborators.begin(),
+                    currentTable->authorizedCollaborators.end(),
+                    currentUser->id) !=
+                   currentTable->authorizedCollaborators.end()) {
+      Universal_TableID = tableID;
+      Universal_TableName = currentTable->name;
+      // Prompt the user if they want to output JSON before deleting the table
+      char jsonChoice;
+      cout
+          << "Do you want to export the table as JSON before deleting? (y/n): ";
+      cin >> jsonChoice;
+      cin.ignore();
+      // FIX ME
+      if (jsonChoice == 'y' || jsonChoice == 'Y') {
+        outputTableToJson(records, Universal_TableName, *currentUser,
+                          Universal_TableID);
+        cout << "Table data exported to JSON." << endl;
+      }
+
+      std::string confirmedName;
+      cout << "You are deleting Table \"" << Universal_TableName << "\". \n";
+      cout << "Please retype the name of the table to confirm deletion (This "
+              "action CANNOT be undone): ";
+      std::getline(cin, confirmedName);
+
+      if (confirmedName != currentTable->name) {
+        cout << "Input did not match table name. Deletion cancelled.\n";
+        break;
+      }
+
+      // Ask the user if they want to see the records to be deleted
+      int flag = 0;
+      cout << "Do you want to see the records to be deleted? 1 = No, 2 = Yes: "
+              "\n";
+      cin >> flag;
+      cin.ignore();
+      // FIX ME
+      // Delete table records
+      if (flag != 1 && flag != 2) {
+        flag = 1;
+        cout << "Flag being reset.";
+      }
+      pair<int, int> deletionResult = deleteTableRecords(
+          Universal_TableName, Universal_TableID, records, flag);
+
+      cout << "Deleted " << deletionResult.first
+           << " records in total, including " << deletionResult.second
+           << " encrypted records." << endl;
+
+      tables.erase(remove_if(tables.begin(), tables.end(),
+                             [&](Table &table) { return table.id == tableID; }),
+                   tables.end());
+
+    } else {
+      cout << "You do not have the rights to delete this table." << endl;
+    }
+
+    // Save tables after deletion
     saveTables(tables);
+    saveRecords(records);
+
     tableMenuFlag = false;
     break;
+  }
+
   case 5: {
     int tableID = 0;
     int userID = 0;
@@ -442,7 +517,14 @@ void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
       break;
     }
   }
+  case 8: {
 
+    saveRecords(records);
+    outputTableToJson(records, Universal_TableName, *currentUser,
+                      Universal_TableID);
+    cout << "File output completed." << endl;
+    break;
+  }
   case 9: {
     saveRecords(records);
     break;
@@ -490,7 +572,8 @@ int main() {
       loginMenu(currentUser, tableMenuFlag, users, programTerminated);
     }
     while (currentUser) {
-      tableMenu(currentUser, tableMenuFlag, tables, currentTable, users);
+      tableMenu(currentUser, tableMenuFlag, tables, currentTable, records,
+                users);
 
       while (!tableMenuFlag && currentUser) {
         recordMenu(currentUser, tableMenuFlag, tables, currentTable, records,

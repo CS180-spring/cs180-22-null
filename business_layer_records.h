@@ -58,5 +58,9 @@ void sortRecords(std::vector<Record> &records, bool reverse);
 void sortRecordsById(std::vector<Record> &records, bool reverse);
 bool compareByData(const Record &a, const Record &b);
 bool compareById(const Record &a, const Record &b);
+std::pair<int, int> deleteTableRecords(const std::string &tableName,
+                                       const int tableID,
+                                       std::vector<Record> &records,
+                                       const int flag);
 
 #endif // BUSINESS_LAYER_RECORDS_H
