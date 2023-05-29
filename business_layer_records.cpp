@@ -113,16 +113,11 @@ int insert(const string &data, const string &createdBy, vector<Record> &records,
     newRecord.data = encryptXOR(newRecord.data, cryptKey);
     newRecord.encryptionType = "XOR";
   }
+  // KL, 05/11/2023
   if (encryption == 2) {
     newRecord.data = encryptXOR(newRecord.data, cryptKey);
     newRecord.encryptionType = "TEA";
   }
-  /*// KL, 05/11/2023
-  if (encryption == 2) {
-    newRecord.data = encryptTEA(newRecord.data, cryptKey);
-    newRecord.encryptionType = "TEA";
-  }
-*/
   records.push_back(newRecord);
   return newRecord.id;
 }
