@@ -17,8 +17,6 @@
 
 std::vector<Table> loadTables();
 void saveTables(const std::vector<Table> &tables);
-
 int getNextID(const std::vector<Table> &tables);
-
 
 #endif // DATA_LAYER_TABLES_H
