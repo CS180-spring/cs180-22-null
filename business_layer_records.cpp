@@ -74,6 +74,7 @@ void deleteRecord(int id, vector<Record> &records, const string &password) {
   Parameters: id of record to update, the data to update, and the database of
    the record
 */
+// Update to hanlde wrong ID input
 void update(int id, const string &newData, vector<Record> &records,
             const string &password) {
   auto it = find_if(records.begin(), records.end(),
@@ -89,6 +90,8 @@ void update(int id, const string &newData, vector<Record> &records,
     }
     it->data = newData;
     it->last_modified = currentDateTime();
+  } else {
+    cout << "No record found with id: " << id << endl;
   }
 }
 
@@ -128,7 +131,8 @@ Record getRecordById(int id, const vector<Record> &records) {
   if (temp != records.end()) {
     return *temp;
   } else {
-    throw invalid_argument("Record with specified ID does not exist.");
+    cout << "Record with specified ID does not exist.\n";
+    return Record{-1, /* and so on for other fields */};
   }
 }
 

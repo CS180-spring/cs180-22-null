@@ -424,26 +424,33 @@ void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
     cin.ignore();
 
     Record record = getRecordById(id, records);
-    if (record.encryptionType != "NONE") {
-      cout << "This record is protected. Please enter the password: ";
-      getline(cin, password);
-    } else {
-      password = "NONE";
-    }
+    if (record.id != -1) {
+      if (record.encryptionType != "NONE") {
+        cout << "This record is protected. Please enter the password: ";
+        getline(cin, password);
+      } else {
+        password = "NONE";
+      }
 
-    cout << "Enter new data: ";
-    getline(cin, newData);
-    update(id, newData, records, password);
+      cout << "Enter new data: ";
+      getline(cin, newData);
+      update(id, newData, records, password);
+    }
     break;
   }
+
   case 4: {
-    for (const auto &record : filterByTableID(records, Universal_TableID)) {
+    for (auto &record : filterByTableID(records, Universal_TableID)) {
       updateLastRead(record.id, records);
+
       cout << record.id << ": ";
 
       // Check if the data is encrypted
       if (record.encryptionType != "NONE") {
         cout << "Encrypted data";
+      } else if (record.state == 2) {
+        // If the state is 2, there might be a potential integrity issue
+        cout << "[POTENTIALLY TEMPERED]: " << record.data;
       } else {
         cout << record.data;
       }

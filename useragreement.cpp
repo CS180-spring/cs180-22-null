@@ -34,7 +34,7 @@ If you have any questions or concerns regarding this agreement, please contact u
 Last updated: 5/12/2023)";
 
   std::string userResponse;
-  std::cout << agreement << std::endl;
+  std::cout << std::endl << agreement << std::endl;
   std::cout << "\nDo you agree with these terms? (YES/NO): ";
   std::getline(std::cin, userResponse);
 

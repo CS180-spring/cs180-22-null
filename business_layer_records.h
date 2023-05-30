@@ -16,6 +16,8 @@ struct Record {
   std::string creator;
   std::string encryptionType = "NONE";
   std::string signature;
+  std::string jsonSignature;
+	int state = 1;
 };
 std::string generateSignature(const std::string &str);
 std::string encryptXOR(const std::string &password, const std::string &XORKEY);

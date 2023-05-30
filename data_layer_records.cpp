@@ -15,6 +15,17 @@
 using json = nlohmann::json;
 using namespace std;
 
+// Modify File Output to prevent modification
+string generateSignatureForRecord(const Record &record) {
+  string str = to_string(record.id) + record.tableName + record.data +
+               record.creator + record.timestamp + record.last_modified +
+               record.last_read + record.encryptionType + record.signature +
+               to_string(record.state);
+  hash<string> hasher;
+  size_t hash = hasher(str);
+  return to_string(hash);
+}
+
 vector<Record> loadRecords() {
   vector<Record> records;
 
@@ -35,6 +46,17 @@ vector<Record> loadRecords() {
       record.last_read = j_record["last_read"];
       record.encryptionType = j_record["encryptionType"];
       record.signature = j_record["signature"];
+      record.jsonSignature = j_record["jsonSignature"];
+      record.state = j_record["state"].get<int>();
+
+      // Recalculate the signature
+      string recalculatedSignature = generateSignatureForRecord(record);
+      if (recalculatedSignature != record.jsonSignature) {
+        cerr << "Warning: Data integrity issue detected for record id "
+             << record.id << "\n";
+        record.state = 2;
+      }
+
       records.push_back(record);
     }
 
@@ -48,6 +70,7 @@ void saveRecords(const vector<Record> &records) {
   json j_records = json::array();
 
   for (const Record &record : records) {
+    string jsonSignature = generateSignatureForRecord(record);
     json j_record = {{"id", record.id},
                      {"tableID", record.tableID},
                      {"tableName", record.tableName},
@@ -57,7 +80,9 @@ void saveRecords(const vector<Record> &records) {
                      {"last_modified", record.last_modified},
                      {"last_read", record.last_read},
                      {"encryptionType", record.encryptionType},
-                     {"signature", record.signature}};
+                     {"signature", record.signature},
+                     {"jsonSignature", jsonSignature},
+                     {"state", record.state}};
     j_records.push_back(j_record);
   }
 

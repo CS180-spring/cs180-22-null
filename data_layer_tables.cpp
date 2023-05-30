@@ -15,8 +15,32 @@
 using json = nlohmann::json;
 using namespace std;
 
+string generateSignature(const Table &table) {
+  hash<string> hasher;
+  size_t hash = hasher(to_string(table.id) + table.name + table.owner);
+  return to_string(hash);
+}
+
+void saveTables(const vector<Table> &tables) {
+  json j_tables = json::array();
+
+  for (const Table &table : tables) {
+    string signature = generateSignature(table);
+    json j_table = {{"id", table.id},
+                    {"owner", table.owner},
+                    {"name", table.name},
+                    {"authorizedCollaborators", table.authorizedCollaborators},
+                    {"signature", signature}};
+    j_tables.push_back(j_table);
+  }
+
+  ofstream ofs("tables.json");
+  ofs << j_tables.dump(4) << endl;
+  ofs.close();
+}
+
 vector<Table> loadTables() {
-  vector<Table> tables{};
+  vector<Table> tables;
 
   ifstream ifs("tables.json");
   if (ifs.is_open()) {
@@ -30,27 +54,23 @@ vector<Table> loadTables() {
       table.name = j_table["name"];
       table.authorizedCollaborators =
           j_table["authorizedCollaborators"].get<std::vector<int>>();
+      string storedSignature = j_table["signature"];
+
+      // Generate a signature based on the loaded table and compare it to the
+      // stored signature
+      string generatedSignature = generateSignature(table);
+      if (storedSignature != generatedSignature) {
+        // The signature doesn't match - the table may have been tampered with!
+        throw runtime_error("Table signature doesn't match!");
+      }
+
       tables.push_back(table);
     }
+
     ifs.close();
   }
+
   return tables;
-}
-
-void saveTables(const vector<Table> &tables) {
-  json j_tables = json::array();
-
-  for (const Table &table : tables) {
-    json j_table = {{"id", table.id},
-                    {"owner", table.owner},
-                    {"name", table.name},
-                    {"authorizedCollaborators", table.authorizedCollaborators}};
-    j_tables.push_back(j_table);
-  }
-
-  ofstream ofs("tables.json");
-  ofs << j_tables.dump(4) << endl;
-  ofs.close();
 }
 
 int getNextID(const vector<Table> &tables) {
