@@ -9,10 +9,6 @@
 <code><img height="20" src="https://shields.io/badge/Library-string-cc66ff?style=flat-square" alt="string"></code>
 <code><img height="20" src="https://shields.io/badge/Library-vector-9933cc?style=flat-square" alt="vector"></code>
 
-
-
-
-
 Please read and agree to our user agreement at the end of this document BEFORE using the software.
 
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-718a45dd9cf7e7f842a935f5ebbe5719a5e09af4491e668f4dbf3b35d5cca122.svg)](https://classroom.github.com/online_ide?assignment_repo_id=10849768&assignment_repo_type=AssignmentRepo)
@@ -54,6 +50,7 @@ A text-based database program built with C++. Features include:
 - User ID generation for unique identification.
 - Inviting users to collaborate on tables.
 - Enhanced table details display.
+- Integrity checking of records: Detect and mark tampered records.
 
 ### Getting Started
 Compile and run main.cpp. Use the menu to perform actions on records.
@@ -78,6 +75,9 @@ Users can invite other users to collaborate on tables by adding them as authoriz
 
 ### Enhanced Table Details Display
 The table details display has been improved to align columns properly and show the owner of the table.
+
+### Integrity Checking
+The integrity of records is checked during retrieval. If the state of a record is found to be `2`, it is flagged as potentially tampered with. The user is still able to view this record but should be aware of its flagged status.
 
 ### Future Enhancements
 Future enhancements include adding encryption for enhanced data security and adding a web frontend for easier user access.
