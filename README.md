@@ -56,31 +56,52 @@ A text-based database program built with C++. Features include:
 Compile and run main.cpp. Use the menu to perform actions on records.
 
 ### Authentication
-Log in with username and password. Root manager can create new users. Users can only access records they created.
+Log in with the NullDB system using your unique username and password. A Root manager is granted the ability to create new users and assign specific permissions. Users have access only to the records they created, ensuring data security and privacy.
 
 ### Filtering and Searching
-Filter records by creator or keyword.
+NullDB offers robust filtering capabilities. Records can be filtered by their creator, and keywords within the record content can also be searched. This functionality improves data accessibility and user navigation through the system.
 
 ### Data Persistence
-Records and tables are stored in JSON files for easy data persistence.
+Our software ensures data persistence by storing records and tables in JSON files. This way, your data remains secure and available even across system restarts or shutdowns.
+
+### Multiple Tables Management
+NullDB supports handling multiple tables, allowing users to efficiently manage and categorize their data according to their specific needs. This feature enables broader applications of the software, catering to various data organization requirements.
 
 ### Exporting Files
-Users can export tables and records to JSON files for external use.
+Users can not only export individual records but also entire tables to JSON files. This flexibility enhances data mobility, allowing users to use and share their data externally while maintaining the structural integrity of the records.
 
 ### User ID Generation
-Each user is assigned a unique ID for identification purposes.
+Upon account creation, each user is assigned a unique ID. This ID facilitates user identification within the system and helps maintain secure access control to the records created by them.
 
 ### Collaborating on Tables
-Users can invite other users to collaborate on tables by adding them as authorized collaborators.
+To facilitate collaborative work, NullDB users can invite other users to work on the same table by adding them as authorized collaborators. This feature boosts teamwork efficiency while keeping data access controlled and secure.
 
 ### Enhanced Table Details Display
-The table details display has been improved to align columns properly and show the owner of the table.
+We have improved our table details display. It now aligns columns properly for better readability and also shows the owner of the table, adding another layer of information to support efficient data management.
 
 ### Integrity Checking
-The integrity of records is checked during retrieval. If the state of a record is found to be `2`, it is flagged as potentially tampered with. The user is still able to view this record but should be aware of its flagged status.
+To maintain data reliability, the integrity of records is checked during retrieval. If a record's state is flagged as '2', it is marked as potentially tampered with. Users can still access such records but should consider the flagged status while interpreting the data.
+
+### Deleting Tables
+The option to delete tables is available, which also results in the deletion of all the records within it. This feature is useful for managing data storage and decluttering the system of unwanted data.
+
+### Encryption Options
+In our latest update, we have increased our focus on data security and have included the addition of multiple encryption options. Encrypted records are treated distinctly during various operations:
+
+- **Encryption Types**: We provide different encryption options for users. Selecting the type of encryption that suits your requirements is now possible.
+  
+- **Query and Sorting**: During any queries or sorting operations, encrypted records are skipped. This ensures that the confidentiality of the data remains intact even while performing these operations.
+
+- **Viewing Records**: Encrypted records will only display '[Encrypted Data]' when viewing. To view an encrypted record's actual data, you need to view the record individually and provide the correct decryption key.
+
+- **Decryption Key Management**: Upon inserting an encrypted record, users are responsible for remembering their decryption key. This key is essential for viewing the actual data in an encrypted record. Please note that we do not store decryption keys, adding an additional layer of data security.
+
+- **Deletion of Records**: When a user performs a delete operation, the output will display two numbers: the number of records deleted and the number of encrypted records deleted. This ensures that users are informed about the impact of their actions, especially concerning encrypted data.
+
 
 ### Future Enhancements
-Future enhancements include adding encryption for enhanced data security and adding a web frontend for easier user access.
+We are continuously working to make NullDB better. Our future plans include the addition of different types of encryption for enhanced data security and the development of a web frontend for easier user access and interaction with the system.
+
 
 ### BurnDown Chart
 [BurnDown Chart](https://docs.google.com/spreadsheets/d/1hRzuSrZP6Vtv3Y083Tg9bsVdBTbVcGTs/edit#gid=2086879608)
