@@ -437,12 +437,18 @@ void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
     break;
   }
   case 4: {
-    for (const auto &record : filterByTableID(
-             records, Universal_TableID)) { // Using new function, this
-                                            // returns all in the same I
+    for (const auto &record : filterByTableID(records, Universal_TableID)) {
       updateLastRead(record.id, records);
-      cout << record.id << ": " << record.data
-           << " (Created at: " << record.timestamp
+      cout << record.id << ": ";
+
+      // Check if the data is encrypted
+      if (record.encryptionType != "NONE") {
+        cout << "Encrypted data";
+      } else {
+        cout << record.data;
+      }
+
+      cout << " (Created at: " << record.timestamp
            << ", Last modified: " << record.last_modified << ", Last read: ";
       if (record.last_read.empty()) {
         cout << "Never been read";
@@ -453,6 +459,7 @@ void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
     }
     break;
   }
+
   case 5: {
     string keyword;
     cout << "Enter keyword: ";

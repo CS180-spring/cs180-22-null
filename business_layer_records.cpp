@@ -8,6 +8,221 @@
 
 using namespace std;
 
+/*
+  Function: insert
+  Desc: A function for the INSERT SQL command: inserts a record into a table
+  Parameters: data to insert, the user info, and the database to insert in
+  Return: the id of the record
+*/
+int insert(const string &data, const string &createdBy, vector<Record> &records,
+           const int encryption, const string &cryptKey, const int tableID,
+           const string &TableName) {
+  Record newRecord;
+  newRecord.id = getNextId(records);
+  // kevin is working on this
+  newRecord.data = data;
+  newRecord.creator = createdBy;
+  newRecord.timestamp = currentDateTime();
+  newRecord.last_modified = currentDateTime();
+  newRecord.last_read = "";
+  newRecord.encryptionType = "NONE";
+  newRecord.signature =
+      generateSignature(data);     // This would keep the unencrypted signature
+  newRecord.tableID = tableID;     // CW
+  newRecord.tableName = TableName; // CW
+  if (encryption == 1) {
+    newRecord.data = encryptXOR(newRecord.data, cryptKey);
+    newRecord.encryptionType = "XOR";
+  }
+  // KL, 05/11/2023
+  if (encryption == 2) {
+    newRecord.data = encryptXOR(newRecord.data, cryptKey);
+    newRecord.encryptionType = "TEA";
+  }
+  records.push_back(newRecord);
+  return newRecord.id;
+}
+
+/*
+  Function: delete Record
+  Desc: A function for the DELETE SQL command: deletes a record from a table
+  Parameters: the id of the record to delete, the table that the record is
+   located in
+*/
+void deleteRecord(int id, vector<Record> &records, const string &password) {
+  auto it = find_if(records.begin(), records.end(),
+                    [id](const Record &record) { return record.id == id; });
+
+  if (it != records.end()) {
+    if (it->encryptionType != "NONE") {
+      string decryptedData = decryptXOR(it->data, password);
+      if (generateSignature(decryptedData) != it->signature) {
+        cout << "decryptedData signature unmatch!";
+        //<< generateSignature(decryptedData) << endl;  Debug MSG
+        cout << "Invalid decryption key." << endl;
+        return;
+      }
+    }
+    it->last_modified = currentDateTime();
+    records.erase(it);
+  }
+}
+
+/*
+  Function: update
+  Desc: A function for the INSERT SQL command
+  Parameters: id of record to update, the data to update, and the database of
+   the record
+*/
+void update(int id, const string &newData, vector<Record> &records,
+            const string &password) {
+  auto it = find_if(records.begin(), records.end(),
+                    [id](const Record &record) { return record.id == id; });
+
+  if (it != records.end()) {
+    if (it->encryptionType != "NONE") {
+      string decryptedData = decryptXOR(it->data, password);
+      if (generateSignature(decryptedData) != it->signature) {
+        cout << "Invalid decryption key." << endl;
+        return;
+      }
+    }
+    it->data = newData;
+    it->last_modified = currentDateTime();
+  }
+}
+
+void updateLastRead(int id, vector<Record> &records) {
+  auto it = find_if(records.begin(), records.end(),
+                    [id](const Record &record) { return record.id == id; });
+  if (it != records.end()) {
+    it->last_read = currentDateTime();
+  }
+}
+
+vector<Record> displayRecord(int id, const vector<Record> &records,
+                             User *currentUser, const string &password) {
+  vector<Record> temp;
+  auto record = getRecordById(id, records);
+
+  if (record.creator == currentUser->username || currentUser->isManager) {
+    if (record.encryptionType == "XOR") {
+      record.data = decryptXOR(record.data, password);
+      if (generateSignature(record.data) != record.signature) {
+        cout << "decryptedData signature unmatch:"
+             << generateSignature(record.data) << endl;
+        cout << "DEBUG MESSAGE: " << record.data << endl;
+        cout << "Invalid decryption key." << endl;
+        return temp;
+      }
+    }
+    temp.push_back(record);
+  }
+  return temp;
+}
+
+Record getRecordById(int id, const vector<Record> &records) {
+  auto temp = find_if(records.begin(), records.end(),
+                      [id](const Record &record) { return record.id == id; });
+
+  if (temp != records.end()) {
+    return *temp;
+  } else {
+    throw invalid_argument("Record with specified ID does not exist.");
+  }
+}
+
+bool compareByData(const Record &a, const Record &b) { return a.data < b.data; }
+
+bool compareById(const Record &a, const Record &b) { return a.id < b.id; }
+
+void sortRecords(vector<Record> &records, bool reverse) {
+  vector<Record> nonEncryptedRecords;
+  vector<Record> encryptedRecords;
+
+  // Split into 2 Vectors
+  for (const auto &record : records) {
+    if (record.encryptionType == "NONE") {
+      nonEncryptedRecords.push_back(record);
+    } else {
+      encryptedRecords.push_back(record);
+    }
+  }
+
+  // Sort them separately
+  if (reverse) {
+    sort(nonEncryptedRecords.rbegin(), nonEncryptedRecords.rend(),
+         compareByData);
+    sort(encryptedRecords.rbegin(), encryptedRecords.rend(), compareByData);
+  } else {
+    sort(nonEncryptedRecords.begin(), nonEncryptedRecords.end(), compareByData);
+    sort(encryptedRecords.begin(), encryptedRecords.end(), compareByData);
+  }
+
+  // Joint them back
+  nonEncryptedRecords.insert(nonEncryptedRecords.end(),
+                             encryptedRecords.begin(), encryptedRecords.end());
+
+  // Overwrite
+  records = nonEncryptedRecords;
+}
+
+void sortRecordsById(vector<Record> &records, bool reverse) {
+  if (reverse) {
+    sort(records.rbegin(), records.rend(), compareById);
+  } else {
+    sort(records.begin(), records.end(), compareById);
+  }
+}
+
+// New patches End
+
+/*
+flag: Controls the operation of the function. If it is 1, the function will just
+delete the records. If it is 2, the function will delete the records and also
+output all the records that have encryptionType = "NONE".
+*/
+std::pair<int, int> deleteTableRecords(const std::string &tableName,
+                                       const int tableID,
+                                       std::vector<Record> &records,
+                                       const int flag) {
+  int deletedRecords = 0;
+  int deletedEncryptedRecords = 0;
+
+  records.erase(
+      remove_if(records.begin(), records.end(),
+                [&](Record &record) {
+                  if (record.tableID == tableID &&
+                      record.tableName == tableName) {
+                    if (record.encryptionType != "NONE") {
+                      deletedEncryptedRecords++;
+                    }
+
+                    // If flag is 2, and record is not encrypted, output the
+                    // record
+                    if (flag == 2 && record.encryptionType == "NONE") {
+                      cout << "ID: " << record.id << "\n";
+                      cout << "Data: " << record.data << "\n";
+                      cout << "Creator: " << record.creator << "\n";
+                      cout << "=====================================\n";
+                    }
+
+                    deletedRecords++;
+                    return true;
+                  }
+                  return false;
+                }),
+      records.end());
+
+  if (flag == 2 && deletedEncryptedRecords > 0) {
+    cout << deletedEncryptedRecords
+         << " encrypted records have been deleted but not shown.\n";
+  }
+
+  return make_pair(deletedRecords, deletedEncryptedRecords);
+}
+
+// The function below handle Encryption/Decryption
 string encryptXOR(const string &password, const string &XOR_KEY) {
   if (XOR_KEY.empty()) {
     throw invalid_argument("XOR_KEY must not be empty.");
@@ -87,106 +302,8 @@ string getDecryptKey() { // Helper
   return key;
 }
 
-/*
-  Function: insert
-  Desc: A function for the INSERT SQL command: inserts a record into a table
-  Parameters: data to insert, the user info, and the database to insert in
-  Return: the id of the record
-*/
-int insert(const string &data, const string &createdBy, vector<Record> &records,
-           const int encryption, const string &cryptKey, const int tableID,
-           const string &TableName) {
-  Record newRecord;
-  newRecord.id = getNextId(records);
-  // kevin is working on this
-  newRecord.data = data;
-  newRecord.creator = createdBy;
-  newRecord.timestamp = currentDateTime();
-  newRecord.last_modified = currentDateTime();
-  newRecord.last_read = "";
-  newRecord.encryptionType = "NONE";
-  newRecord.signature =
-      generateSignature(data);     // This would keep the unencrypted signature
-  newRecord.tableID = tableID;     // CW
-  newRecord.tableName = TableName; // CW
-  if (encryption == 1) {
-    newRecord.data = encryptXOR(newRecord.data, cryptKey);
-    newRecord.encryptionType = "XOR";
-  }
-  // KL, 05/11/2023
-  if (encryption == 2) {
-    newRecord.data = encryptXOR(newRecord.data, cryptKey);
-    newRecord.encryptionType = "TEA";
-  }
-  records.push_back(newRecord);
-  return newRecord.id;
-}
-
-/*
-  Function: delete Record
-  Desc: A function for the DELETE SQL command: deletes a record from a table
-  Parameters: the id of the record to delete, the table that the record is
-   located in
-*/
-void deleteRecord(int id, vector<Record> &records, const string &password) {
-  auto it = find_if(records.begin(), records.end(),
-                    [id](const Record &record) { return record.id == id; });
-
-  if (it != records.end()) {
-    if (it->encryptionType != "NONE") {
-      string decryptedData = decryptXOR(it->data, password);
-      if (generateSignature(decryptedData) != it->signature) {
-        cout << "decryptedData signature unmatch:"
-             << generateSignature(decryptedData) << endl;
-        cout << "Invalid decryption key." << endl;
-        return;
-      }
-    }
-    it->last_modified = currentDateTime();
-    records.erase(it);
-  }
-}
-
-/*
-  Function: update
-  Desc: A function for the INSERT SQL command
-  Parameters: id of record to update, the data to update, and the database of
-   the record
-*/
-void update(int id, const string &newData, vector<Record> &records,
-            const string &password) {
-  auto it = find_if(records.begin(), records.end(),
-                    [id](const Record &record) { return record.id == id; });
-
-  if (it != records.end()) {
-    if (it->encryptionType != "NONE") {
-      string decryptedData = decryptXOR(it->data, password);
-      if (generateSignature(decryptedData) != it->signature) {
-        cout << "Invalid decryption key." << endl;
-        return;
-      }
-    }
-    it->data = newData;
-    it->last_modified = currentDateTime();
-  }
-}
-/*
-  Function: filterByKeyword
-  Desc: Searches the database table for a specific keyword and returns those
-    records that match Parameters: the database table to parse and the keyword
-  to search Return: all the filtered records in the database table pertaining
-  to the keyword
-*/
-vector<Record> filterByKeyword(const vector<Record> &records,
-                               const string &keyword) {
-  vector<Record> filteredRecords;
-  for (const auto &record : records) {
-    if (record.data.find(keyword) != string::npos) {
-      filteredRecords.push_back(record);
-    }
-  }
-  return filteredRecords;
-}
+/// Reorder, the following functions would skip encrypted data when doing DB
+/// query
 
 /*
   Function: filterByCreator
@@ -235,119 +352,23 @@ int countTermFrequency(const string &data, const string &term) {
   return count;
 }
 
-void updateLastRead(int id, vector<Record> &records) {
-  auto it = find_if(records.begin(), records.end(),
-                    [id](const Record &record) { return record.id == id; });
-  if (it != records.end()) {
-    it->last_read = currentDateTime();
-  }
-}
-
-Record getRecordById(int id, const vector<Record> &records) {
-  auto temp = find_if(records.begin(), records.end(),
-                      [id](const Record &record) { return record.id == id; });
-
-  if (temp != records.end()) {
-    return *temp;
-  } else {
-    throw invalid_argument("Record with specified ID does not exist.");
-  }
-}
-
-vector<Record> displayRecord(int id, const vector<Record> &records,
-                             User *currentUser, const string &password) {
-  vector<Record> temp;
-  auto record = getRecordById(id, records);
-
-  if (record.creator == currentUser->username || currentUser->isManager) {
-    if (record.encryptionType == "XOR") {
-      record.data = decryptXOR(record.data, password);
-      if (generateSignature(record.data) != record.signature) {
-        cout << "decryptedData signature unmatch:"
-             << generateSignature(record.data) << endl;
-        cout << "DEBUG MESSAGE: " << record.data << endl;
-        cout << "Invalid decryption key." << endl;
-        return temp;
-      }
-    }
-    temp.push_back(record);
-  }
-  return temp;
-}
-
-bool compareByData(const Record &a, const Record &b) { return a.data < b.data; }
-
-bool compareById(const Record &a, const Record &b) { return a.id < b.id; }
-
-void sortRecords(vector<Record> &records, bool reverse) {
-  vector<Record> filteredRecords;
-
-  // Filter the records
-  copy_if(records.begin(), records.end(), back_inserter(filteredRecords),
-          [](Record const &record) { return record.encryptionType == "NONE"; });
-
-  // Sort the filtered records
-  if (reverse) {
-    sort(filteredRecords.rbegin(), filteredRecords.rend(), compareByData);
-  } else {
-    sort(filteredRecords.begin(), filteredRecords.end(), compareByData);
-  }
-
-  // Copy back sorted records to the original vector
-  records = filteredRecords;
-}
-
-void sortRecordsById(vector<Record> &records, bool reverse) {
-  if (reverse) {
-    sort(records.rbegin(), records.rend(), compareById);
-  } else {
-    sort(records.begin(), records.end(), compareById);
-  }
-}
-
-// New patches End
-
 /*
-flag: Controls the operation of the function. If it is 1, the function will just
-delete the records. If it is 2, the function will delete the records and also
-output all the records that have encryptionType = "NONE".
+  Function: filterByKeyword
+  Desc: Searches the database table for a specific keyword and returns those
+    records that match Parameters: the database table to parse and the keyword
+  to search Return: all the filtered records in the database table pertaining
+  to the keyword
+        Updated 5/29/23 to skip encrypted data.
 */
-std::pair<int, int> deleteTableRecords(const std::string &tableName,
-                                       const int tableID,
-                                       std::vector<Record> &records,
-                                       const int flag) {
-  int deletedRecords = 0;
-  int deletedEncryptedRecords = 0;
-
-  records.erase(
-      remove_if(records.begin(), records.end(),
-                [&](Record &record) {
-                  if (record.tableID == tableID &&
-                      record.tableName == tableName) {
-                    if (record.encryptionType != "NONE") {
-                      deletedEncryptedRecords++;
-                    }
-
-                    // If flag is 2, and record is not encrypted, output the
-                    // record
-                    if (flag == 2 && record.encryptionType == "NONE") {
-                      cout << "ID: " << record.id << "\n";
-                      cout << "Data: " << record.data << "\n";
-                      cout << "Creator: " << record.creator << "\n";
-                      cout << "=====================================\n";
-                    }
-
-                    deletedRecords++;
-                    return true;
-                  }
-                  return false;
-                }),
-      records.end());
-
-  if (flag == 2 && deletedEncryptedRecords > 0) {
-    cout << deletedEncryptedRecords
-         << " encrypted records have been deleted but not shown.\n";
+vector<Record> filterByKeyword(const vector<Record> &records,
+                               const string &keyword) {
+  vector<Record> filteredRecords;
+  for (const auto &record : records) {
+    // If the data is not encrypted, perform the search
+    if (record.encryptionType == "NONE" &&
+        record.data.find(keyword) != string::npos) {
+      filteredRecords.push_back(record);
+    }
   }
-
-  return make_pair(deletedRecords, deletedEncryptedRecords);
+  return filteredRecords;
 }

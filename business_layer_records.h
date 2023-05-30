@@ -17,7 +17,7 @@ struct Record {
   std::string encryptionType = "NONE";
   std::string signature;
 };
-
+std::string generateSignature(const std::string &str);
 std::string encryptXOR(const std::string &password, const std::string &XORKEY);
 std::string decryptXOR(const std::string &encrypted_password,
                        const std::string &XORKEY);
