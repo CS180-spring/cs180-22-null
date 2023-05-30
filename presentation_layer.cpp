@@ -315,7 +315,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
   }
 } // end TABLE
 
-void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
+void recordMenu(User *&currentUser, bool &tableMenuFlag, vector<Table> &tables,
                 Table *currentTable, vector<Record> &records,
                 vector<User> &users) {
   int choice;
@@ -541,6 +541,7 @@ void recordMenu(User *&currentUser, bool tableMenuFlag, vector<Table> &tables,
   }
   case 9: {
     saveRecords(records);
+    tableMenuFlag = true;
     break;
   }
   case 10: {
