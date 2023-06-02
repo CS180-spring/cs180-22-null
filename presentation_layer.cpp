@@ -188,7 +188,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     currentTable = loadExistingTable(tableID, tables);
     if (!currentTable) {
       cerr << "Table doesn't exist. Please try again." << endl;
-      tableMenuFlag = false;
+      tableMenuFlag = true;
     } else {
       // Check if the current user is the owner or an authorized collaborator
       if (currentTable->owner == currentUser->username ||
@@ -198,12 +198,12 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
         cout << "Loading " << currentTable->name << "..." << endl;
         Universal_TableID = currentTable->id;
         Universal_TableName = currentTable->name;
+        tableMenuFlag = false;
       } else {
         tableMenuFlag = true;
         cout << "You do not have the rights to access this table." << endl;
       }
     }
-    tableMenuFlag = false;
     break;
   }
   case 4: {
@@ -283,7 +283,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     saveTables(tables);
     saveRecords(records);
 
-    tableMenuFlag = false;
+    tableMenuFlag = true;
     break;
   }
 
@@ -300,7 +300,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     addCollaborator(tableID, userID, tables);
     // Save tables after adding a collaborator
     saveTables(tables);
-    tableMenuFlag = false;
+    tableMenuFlag = true;
     break;
   }
   case 6:
