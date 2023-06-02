@@ -61,10 +61,7 @@ void printTableDetails(const std::vector<Table> &tables,
       string collabString;
       if (!table.authorizedCollaborators.empty()) {
         for (const auto &collab : table.authorizedCollaborators) {
-          if (collab == currentUser.id) {
-            collabString +=
-                currentUser.username + "(" + to_string(collab) + "), ";
-          }
+          collabString += to_string(collab) + ", ";
         }
         collabString = collabString.substr(
             0, collabString.size() - 2); // remove last comma and space

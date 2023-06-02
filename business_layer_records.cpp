@@ -122,10 +122,13 @@ vector<Record> displayRecord(int id, const vector<Record> &records,
     if (record.encryptionType == "XOR") {
       record.data = decryptXOR(record.data, password);
       if (generateSignature(record.data) != record.signature) {
+        /*
         cout << "decryptedData signature unmatch:"
              << generateSignature(record.data) << endl;
         cout << "DEBUG MESSAGE: " << record.data << endl;
+        */
         cout << "Invalid decryption key." << endl;
+        
         return temp;
       }
     }
