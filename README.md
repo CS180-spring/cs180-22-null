@@ -43,6 +43,7 @@ A text-based database program built with C++. Features include:
 - Basic insert, delete, and update functionality.
 - Automatic ID generation and timestamping of records.
 - User authentication with username and password, and user-specific record access.
+- Encryption for user information and their data.
 - Root manager account for creating new user accounts.
 - Basic filtering and keyword search for records.
 - Data persistence through storing records in a text file.
@@ -100,7 +101,7 @@ In our latest update, we have increased our focus on data security and have incl
 
 
 ### Future Enhancements
-We are continuously working to make NullDB better. Our future plans include the addition of different types of encryption for enhanced data security and the development of a web frontend for easier user access and interaction with the system.
+We are continuously working to make NullDB better. Our future plans include the development of a web frontend for easier user access and interaction with the system.
 
 
 ### BurnDown Chart
