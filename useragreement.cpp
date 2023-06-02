@@ -40,7 +40,7 @@ Last updated: 5/12/2023)";
 
   std::transform(userResponse.begin(), userResponse.end(), userResponse.begin(),
                  ::toupper);
-  if (userResponse == "YES") {
+  if (userResponse == "YES" || userResponse == "Y") {
     return true;
   } else {
     return false;

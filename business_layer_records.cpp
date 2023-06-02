@@ -127,8 +127,8 @@ vector<Record> displayRecord(int id, const vector<Record> &records,
              << generateSignature(record.data) << endl;
         cout << "DEBUG MESSAGE: " << record.data << endl;
         */
-        cout << "Invalid decryption key." << endl;
-        
+        // cout << "Invalid decryption key." << endl;
+
         return temp;
       }
     }
