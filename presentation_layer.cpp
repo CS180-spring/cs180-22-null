@@ -69,8 +69,9 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
   int choice;
   cout << "╔══════════════════════════════════════════════╗" << endl;
   cout << "║                                              ║" << endl;
-  cout << "║         Welcome to the NullDB!               ║" << endl;
+  cout << "║         				  NullDB!                       ║" << endl;
   cout << "║                                              ║" << endl;
+  cout << "╠══════════════════════════════════════════════╣" << endl;
   cout << "╠══════════════════════════════════════════════╣" << endl;
   cout << "║ 1. Log in                                    ║" << endl;
   cout << "║ 2. Create user                               ║" << endl;
@@ -420,6 +421,7 @@ void recordMenu(User *&currentUser, bool &tableMenuFlag, vector<Table> &tables,
   cout << "║                                              ║" << endl;
   cout << "║                 Record Menu                  ║" << endl;
   cout << "║                                              ║" << endl;
+  cout << "╠══════════════════════════════════════════════╣" << endl;
   cout << "╠══════════════════════════════════════════════╣" << endl;
   cout << "║ 0. Display by ID                             ║" << endl;
   cout << "║ 1. Insert                                    ║" << endl;
