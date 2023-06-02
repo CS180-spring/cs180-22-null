@@ -69,7 +69,7 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
   int choice;
   cout << "╔══════════════════════════════════════════════╗" << endl;
   cout << "║                                              ║" << endl;
-  cout << "║         				  NullDB!                       ║" << endl;
+  cout << "║                   NULLDB                     ║" << endl;
   cout << "║                                              ║" << endl;
   cout << "╠══════════════════════════════════════════════╣" << endl;
   cout << "╠══════════════════════════════════════════════╣" << endl;
@@ -449,6 +449,12 @@ void recordMenu(User *&currentUser, bool &tableMenuFlag, vector<Table> &tables,
 
     Record record = getRecordById(id, records);
     if (record.encryptionType != "NONE") {
+      if (record.state == 2) {
+        cout << "Sorry, your record is corrupted due to illegal tampering. "
+                "Please get in touch with us to see if a recovery is "
+                "possible.\n";
+        break;
+      }
       cout << "This record is protected. Please enter the password: ";
       getline(cin, password);
     } else {
@@ -555,12 +561,15 @@ void recordMenu(User *&currentUser, bool &tableMenuFlag, vector<Table> &tables,
 
       cout << record.id << ": ";
 
-      // Check if the data is encrypted
-      if (record.encryptionType != "NONE") {
+      // Check if the data is encrypted and potentially tempered
+      if (record.encryptionType != "NONE" && record.state == 2) {
+        cout << "Encrypted data that might have been tampered with. Decryption "
+                "is not possible.";
+      } else if (record.encryptionType != "NONE") {
         cout << "Encrypted data";
       } else if (record.state == 2) {
         // If the state is 2, there might be a potential integrity issue
-        cout << "[POTENTIALLY TEMPERED]: " << record.data;
+        cout << "[POTENTIALLY TAMPERED]: " << record.data;
       } else {
         cout << record.data;
       }
