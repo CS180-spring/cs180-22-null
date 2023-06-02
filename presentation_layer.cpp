@@ -145,17 +145,15 @@ void loginMenu(User *&currentUser, bool &tableMenuFlag, vector<User> &users,
   return;
 }
 
-void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
-               Table *currentTable, vector<Record> &records,
-               vector<User> &users) {
+void tableMenu(User *&currentUser, bool &tableMenuFlag, vector<Table> &tables,
+               Table *&currentTable, vector<Record> &records,
+               const vector<User> &users, bool &logoutFlag) {
   int choice;
   cout << "╔══════════════════════════════════════════════╗" << endl;
   cout << "║                                              ║" << endl;
   cout << "║                  Table Menu                  ║" << endl;
   cout << "║                                              ║" << endl;
   cout << "╠══════════════════════════════════════════════╣" << endl;
-  cout << "║ Welcome, " << currentUser->username
-       << setw(39 - currentUser->username.length()) << " ║" << endl;
   cout << "╠══════════════════════════════════════════════╣" << endl;
   cout << "║ 1. Create a table                            ║" << endl;
   cout << "║ 2. View all tables                           ║" << endl;
@@ -184,7 +182,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
   } // end case 1
   case 2:
     // Load tables before printing
-    // tables = loadTables();
+    tables = loadTables();
     // printTables(currentUser);
     printTableDetails(tables, *currentUser);
 
@@ -262,11 +260,7 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
       // authorized collaborator
       if (!currentTable) {
         cerr << "Table doesn't exist. Please try again." << endl;
-      } else if (currentTable->owner == currentUser->username ||
-                 find(currentTable->authorizedCollaborators.begin(),
-                      currentTable->authorizedCollaborators.end(),
-                      currentUser->id) !=
-                     currentTable->authorizedCollaborators.end()) {
+      } else if (currentTable->owner == currentUser->username) {
 
         Universal_TableID = tableID;
         Universal_TableName = currentTable->name;
@@ -320,7 +314,9 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
             tables.end());
 
       } else {
-        cout << "You do not have the rights to delete this table." << endl;
+        cout << "You do not have the rights to delete this table (Only the "
+                "owner can)."
+             << endl;
       }
 
       // Save tables after deletion
@@ -397,16 +393,15 @@ void tableMenu(User *currentUser, bool &tableMenuFlag, vector<Table> &tables,
     }
     break;
   }
-
+    // FIX ME LOG OUT
   case 6: {
     saveTables(tables);
     tableMenuFlag = false;
-    string tempUser =
-        currentUser->username; // Saves current user name for exit message
+    string tempUser = currentUser->username;
     if (logout(currentUser)) {
-      currentUser = nullptr; // Set currentUser to nullptr to indicate logout
       cout << "Goodbye, " << tempUser << endl;
-      break; // break out of the inner while-loop if logout was successful
+      logoutFlag = true; // set logout flag
+      break;
     }
     cout << "Log out was unsuccessful" << endl;
     break;
@@ -694,17 +689,21 @@ int main() {
   bool programTerminated = false;
   bool userAgreement = getUserAgreement();
 
+  bool logoutFlag = false; // initialize a new flag
+
   while (userAgreement && !programTerminated) {
     while (!currentUser && !programTerminated) {
+      logoutFlag = false; // reset logout flag
       loginMenu(currentUser, tableMenuFlag, users, programTerminated);
     }
-    while (currentUser) {
+    while (currentUser && !logoutFlag) {
       tableMenu(currentUser, tableMenuFlag, tables, currentTable, records,
-                users);
-
-      while (!tableMenuFlag && currentUser) {
-        recordMenu(currentUser, tableMenuFlag, tables, currentTable, records,
-                   users);
+                users, logoutFlag);
+      if (!logoutFlag) {
+        while (!tableMenuFlag && currentUser) {
+          recordMenu(currentUser, tableMenuFlag, tables, currentTable, records,
+                     users);
+        }
       }
     }
   }
