@@ -34,7 +34,7 @@ NullDB is a powerful database solution designed to handle basic text documents w
 - string
 - vector
 
-### Interface: website (OTA)
+### Interface: Terminal
 
 ### Features
 A text-based database program built with C++. Features include:
@@ -53,7 +53,7 @@ A text-based database program built with C++. Features include:
 - Integrity checking of records: Detect and mark tampered records.
 
 ### Getting Started
-Compile and run main.cpp. Use the menu to perform actions on records.
+Compile and run presentation_layer.cpp. Use the menu to perform actions on records.
 
 ### Authentication
 Log in with the NullDB system using your unique username and password. A Root manager is granted the ability to create new users and assign specific permissions. Users have access only to the records they created, ensuring data security and privacy.
@@ -137,4 +137,4 @@ By using NullDB, you acknowledge that you have read, understood, and agreed to t
 
 If you have any questions or concerns regarding this agreement, please contact us.
 
-Last updated: 5/12/2023
+Last updated: 06/02/2023
