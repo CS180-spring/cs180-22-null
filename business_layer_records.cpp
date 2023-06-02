@@ -56,6 +56,11 @@ void deleteRecord(int id, vector<Record> &records, const string &password) {
   if (it != records.end()) {
     if (it->encryptionType != "NONE") {
       string decryptedData = decryptXOR(it->data, password);
+      // KL, 06/02/2023
+      /*cout << "from deleteRecord"<<endl;
+      cout << generateSignature(decryptedData) <<endl;
+      cout << it->signature << endl;*/
+
       if (generateSignature(decryptedData) != it->signature) {
         cout << "decryptedData signature unmatch!";
         //<< generateSignature(decryptedData) << endl;  Debug MSG
@@ -79,7 +84,6 @@ void update(int id, const string &newData, vector<Record> &records,
             const string &password) {
   auto it = find_if(records.begin(), records.end(),
                     [id](const Record &record) { return record.id == id; });
-
   if (it != records.end()) {
     if (it->encryptionType != "NONE") {
       string decryptedData = decryptXOR(it->data, password);
@@ -87,8 +91,14 @@ void update(int id, const string &newData, vector<Record> &records,
         cout << "Invalid decryption key." << endl;
         return;
       }
+      // Generate new signature before encrypting new data
+      it->signature = generateSignature(newData); // New Signature
+      it->data = encryptXOR(newData, password);
+    } else {
+      it->data = newData;
+      it->signature =
+          generateSignature(newData); // New Signature for unencrypted data
     }
-    it->data = newData;
     it->last_modified = currentDateTime();
   } else {
     cout << "No record found with id: " << id << endl;
