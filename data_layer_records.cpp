@@ -122,7 +122,7 @@ void outputTableToJson(const vector<Record> &records, const string &tableName,
 
   if (tableRecords[0].creator != currentUser.username &&
       !currentUser.isManager) {
-    cout << "You do not have the rights to export this table." << endl;
+    cout << "You do not have the right to export this table. Only the owner can." << endl;
     return;
   }
 
@@ -145,4 +145,6 @@ void outputTableToJson(const vector<Record> &records, const string &tableName,
   ofstream ofs(tableName + ".json");
   ofs << j_records.dump(4) << endl;
   ofs.close();
+
+  cout << "File output completed." << endl;
 }

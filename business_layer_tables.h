@@ -22,8 +22,8 @@ void addCollaborator(const int &tableID, const int &userID,
 std::string getUsernameFromId(const int &userId,
                               const std::vector<User> &users);
 
-void printTableDetails(const std::vector<Table> &tables, const std::vector<User> &users);
-
+void printTableDetails(const std::vector<Table> &tables,
+                       const User &currentUser);
 
 void deleteTable(std::vector<Record> &records); // Update later
 
